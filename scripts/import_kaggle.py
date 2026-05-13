@@ -16,15 +16,22 @@ DATA_DIR = "./kaggle_data"
 # ── 1. Téléchargement via kaggle CLI ──────────────────────────────────────────
 print("📥  Téléchargement des données Kaggle...")
 os.makedirs(DATA_DIR, exist_ok=True)
+
 result = subprocess.run(
     ["kaggle", "datasets", "download",
      "-d", "sefi-erlich/israeli-supermarkets-data",
      "--unzip", "-p", DATA_DIR],
     capture_output=True, text=True
 )
+
+print(f"STDOUT: {result.stdout}")
+print(f"STDERR: {result.stderr}")
+print(f"CODE: {result.returncode}")
+
 if result.returncode != 0:
-    print(f"❌  Échec téléchargement Kaggle:\n{result.stderr}")
+    print("❌  Échec téléchargement Kaggle")
     sys.exit(1)
+
 print(f"✅  Données téléchargées dans {DATA_DIR}")
 
 # ── 2. Lister les fichiers JSON ───────────────────────────────────────────────
@@ -89,9 +96,8 @@ def supabase_upsert(records):
 # ── 5. Traitement des fichiers ────────────────────────────────────────────────
 total_imported = 0
 BATCH = 50
-MAX_PRODUCTS = 5000  # limite pour le premier test
 
-for filepath in json_files[:10]:  # max 10 fichiers pour tester
+for filepath in json_files[:10]:
     chain = os.path.basename(filepath).replace(".json","")
     print(f"\n🏪  Traitement: {chain}")
     try:
@@ -101,7 +107,6 @@ for filepath in json_files[:10]:  # max 10 fichiers pour tester
         print(f"  ⚠️  Erreur lecture: {e}")
         continue
 
-    # Extraire les produits selon la structure du fichier
     items = []
     if isinstance(raw, list):
         items = raw
@@ -114,9 +119,8 @@ for filepath in json_files[:10]:  # max 10 fichiers pour tester
             items = list(raw.values())[0] if raw else []
 
     print(f"  📦  {len(items)} produits trouvés")
-    items = items[:MAX_PRODUCTS]
+    items = items[:5000]
 
-    # Préparer les records
     records = []
     names_he = []
     for item in items:
@@ -139,7 +143,6 @@ for filepath in json_files[:10]:  # max 10 fichiers pour tester
         })
         names_he.append(name_he)
 
-    # Traduire par batch
     print(f"  🌐  Traduction de {len(records)} produits...")
     for i in range(0, len(records), BATCH):
         batch_names = names_he[i:i+BATCH]
@@ -148,11 +151,10 @@ for filepath in json_files[:10]:  # max 10 fichiers pour tester
             rec["name_fr"] = translated[j] if j < len(translated) else rec["name_he"]
         time.sleep(0.5)
 
-    # Envoyer à Supabase
     print(f"  💾  Envoi dans Supabase...")
     for i in range(0, len(records), BATCH):
         supabase_upsert(records[i:i+BATCH])
-    
+
     total_imported += len(records)
     print(f"  ✅  {len(records)} produits importés")
 
