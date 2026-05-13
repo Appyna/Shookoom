@@ -3,7 +3,7 @@ import_scarper.py — Poomby
 Scrape toutes les chaînes israéliennes → Supabase
 """
 import os, re, json, time, gzip, xml.etree.ElementTree as ET
-import urllib.request, urllib.error
+import urllib.request, urllib.error, asyncio
 from datetime import datetime
 
 print("🚀 Import Poomby démarré")
@@ -14,19 +14,6 @@ SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 DUMP_FOLDER = "./scraper_dumps"
 
-# ── Polyfill anext pour Python < 3.10 ────────────────────────────────────────
-import builtins
-if not hasattr(builtins, "anext"):
-    async def _anext(it, *args):
-        try:
-            return await it.__anext__()
-        except StopAsyncIteration:
-            if args:
-                return args[0]
-            raise
-    builtins.anext = _anext
-
-# ── Supabase helpers ──────────────────────────────────────────────────────────
 def supa_post(table, records, upsert_on=None):
     if not records:
         return []
@@ -67,7 +54,6 @@ def supa_get(table, params=""):
         print(f"  ⚠️ Supabase GET {table}: {e}")
         return []
 
-# ── Traduction OpenAI ─────────────────────────────────────────────────────────
 def translate_batch(texts):
     if not OPENAI_API_KEY:
         return texts
@@ -93,7 +79,6 @@ def translate_batch(texts):
         print(f"  ⚠️ Traduction: {e}")
         return texts
 
-# ── Parse XML ─────────────────────────────────────────────────────────────────
 def parse_xml_file(filepath):
     rows = []
     try:
@@ -148,7 +133,12 @@ def parse_xml_file(filepath):
         print(f"  ⚠️ Parse {filepath}: {e}")
     return rows
 
-# ── Main ──────────────────────────────────────────────────────────────────────
+async def scrape_chain(scraper, limit=50):
+    results = []
+    async for r in scraper.scrape(limit=limit):
+        results.append(r)
+    return results
+
 from il_supermarket_scarper import ScraperFactory
 from il_supermarket_scarper.utils.file_output import DiskFileOutput
 
@@ -207,18 +197,17 @@ for chain_name in all_chains:
         scraper_class = ScraperFactory.get(chain_name)
         output = DiskFileOutput(storage_path=os.path.abspath(chain_dump))
         scraper = scraper_class(file_output=output)
-        results = list(scraper.scrape(limit=50))
+        results = asyncio.run(scrape_chain(scraper, limit=50))
         downloaded = [r for r in results if getattr(r, 'downloaded', False)]
         print(f"  📥 {len(downloaded)} fichiers téléchargés")
     except Exception as e:
         print(f"  ⚠️ Scraping échoué: {e}")
         continue
 
-    # Trouver les fichiers XML téléchargés
     xml_files = []
     for root_dir, dirs, files in os.walk(chain_dump):
         for f in files:
-            if "Price" in f and not "Promo" in f:
+            if "Price" in f and "Promo" not in f:
                 xml_files.append(os.path.join(root_dir, f))
 
     if not xml_files:
@@ -239,14 +228,8 @@ for chain_name in all_chains:
     chain_id = all_rows[0]["chain_id"] or chain_name
     name_fr = CHAIN_NAMES_FR.get(chain_name, chain_name)
 
-    # Insertion chaîne
-    supa_post("chains", [{
-        "id": chain_id,
-        "name_fr": name_fr,
-        "name_he": chain_name
-    }], upsert_on="id")
+    supa_post("chains", [{"id": chain_id, "name_fr": name_fr, "name_he": chain_name}], upsert_on="id")
 
-    # Insertion stores
     stores_seen = set()
     stores_to_insert = []
     for row in all_rows:
@@ -260,7 +243,6 @@ for chain_name in all_chains:
     for i in range(0, len(stores_to_insert), BATCH):
         supa_post("stores", stores_to_insert[i:i+BATCH], upsert_on="id")
 
-    # Traduction
     print(f"  🌐 Traduction...")
     names_he = [r["name_he"] for r in all_rows]
     names_fr = list(names_he)
@@ -271,7 +253,6 @@ for chain_name in all_chains:
             names_fr[i+j] = translated[j] if j < len(translated) else batch[j]
         time.sleep(0.2)
 
-    # Insertion produits
     print(f"  💾 Produits...")
     product_records = []
     seen_barcodes = set()
@@ -290,7 +271,6 @@ for chain_name in all_chains:
                 if p.get("barcode"):
                     product_cache[p["barcode"]] = p["id"]
 
-    # IDs manquants
     missing = [r["barcode"] for r in all_rows if r["barcode"] and r["barcode"] not in product_cache]
     for i in range(0, len(missing), 20):
         batch = missing[i:i+20]
@@ -299,7 +279,6 @@ for chain_name in all_chains:
         for p in (results or []):
             product_cache[p["barcode"]] = p["id"]
 
-    # Insertion prix
     print(f"  💰 Prix...")
     price_records = []
     for i, row in enumerate(all_rows):
