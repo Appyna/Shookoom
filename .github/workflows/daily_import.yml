@@ -2,8 +2,8 @@ name: Import quotidien des prix Kaggle
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # Chaque jour à 3h UTC = 6h Israël
-  workflow_dispatch:       # Permet de lancer manuellement
+    - cron: '0 3 * * *'
+  workflow_dispatch:
 
 jobs:
   import:
@@ -19,28 +19,15 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: |
-          cd scripts
-          pip install -r requirements.txt
-
-      - name: Setup Kaggle credentials
-        run: |
-          mkdir -p ~/.kaggle
-          echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
-
-      - name: Download Kaggle dataset
-        run: |
-          pip install kaggle
-          kaggle datasets download -d erlichsefi/israeli-supermarkets-2024 --unzip -p ./scripts/kaggle_data
+        run: pip install kagglehub openai supabase
 
       - name: Import data to Supabase
         env:
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          cd scripts
-          python import_kaggle.py
+          KAGGLE_API_TOKEN: ${{ secrets.KAGGLE_API_TOKEN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: python scripts/import_kaggle.py
 
       - name: Done
         run: echo "✅ Import Shookoom terminé - $(date)"
