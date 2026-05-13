@@ -1,0 +1,66 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:26:24.163906+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:26:23.471274+03:00",
+            "task_id": "847327cd-8e08-4a8b-91c3-cd8a0dfbd120",
+            "file_name": "Promo7290172900007-032-202605131545.gz",
+            "link": "http://prices.super-pharm.co.il//Download/Promo7290172900007-032-202605131545.gz?bucketName=sp_transparency_output_prod",
+            "size": null
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:26:23.474796+03:00",
+            "task_id": "847327cd-8e08-4a8b-91c3-cd8a0dfbd120",
+            "file_name": "Promo7290172900007-272-202605131545.gz",
+            "link": "http://prices.super-pharm.co.il//Download/Promo7290172900007-272-202605131545.gz?bucketName=sp_transparency_output_prod",
+            "size": null
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:26:23.478005+03:00",
+            "task_id": "847327cd-8e08-4a8b-91c3-cd8a0dfbd120",
+            "file_name": "Promo7290172900007-032-202605131545.gz",
+            "link_collected": "http://prices.super-pharm.co.il//Download/Promo7290172900007-032-202605131545.gz?bucketName=sp_transparency_output_prod"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:26:24.153911+03:00",
+            "task_id": "847327cd-8e08-4a8b-91c3-cd8a0dfbd120",
+            "file_name": "Promo7290172900007-032-202605131545.gz",
+            "downloaded_successfully": false,
+            "extracted_successfully": false,
+            "error_message": "File download failed, stderr: /bin/sh: wget: command not found\n",
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:26:12.282799+03:00",
+            "task_id": "847327cd-8e08-4a8b-91c3-cd8a0dfbd120",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:26:24.160308+03:00",
+            "task_id": "847327cd-8e08-4a8b-91c3-cd8a0dfbd120",
+            "folder_size": {
+                "size": 0.0,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/SUPER_PHARM",
+                "folder_content": []
+            },
+            "completed_successfully": true
+        }
+    ]
+}

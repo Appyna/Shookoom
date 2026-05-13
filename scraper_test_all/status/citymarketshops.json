@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:24:38.642011+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:37.999994+03:00",
+            "task_id": "13699829-da9d-401f-8414-c1b8678cb321",
+            "file_name": "Price7290000000003-013-202605132114.xml.gz",
+            "link": "http://www.citymarket-shops.co.il//downloadFile/8a855ea4-fd19-4947-a35f-e2af3212fb87",
+            "size": 409.6
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:38.004518+03:00",
+            "task_id": "13699829-da9d-401f-8414-c1b8678cb321",
+            "file_name": "Price7290000000003-001-202605132112.xml.gz",
+            "link": "http://www.citymarket-shops.co.il//downloadFile/de653c43-b473-4cce-a0af-eec60509fddb",
+            "size": 409.6
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:24:38.015875+03:00",
+            "task_id": "13699829-da9d-401f-8414-c1b8678cb321",
+            "file_name": "Price7290000000003-013-202605132114.xml.gz",
+            "link_collected": "http://www.citymarket-shops.co.il//downloadFile/8a855ea4-fd19-4947-a35f-e2af3212fb87"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:24:38.620910+03:00",
+            "task_id": "13699829-da9d-401f-8414-c1b8678cb321",
+            "file_name": "Price7290000000003-013-202605132114.xml.gz",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:24:28.105105+03:00",
+            "task_id": "13699829-da9d-401f-8414-c1b8678cb321",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:24:38.637945+03:00",
+            "task_id": "13699829-da9d-401f-8414-c1b8678cb321",
+            "folder_size": {
+                "size": 0.0009241104125976562,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/CITY_MARKET_SHOPS",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/CITY_MARKET_SHOPS/Price7290000000003-013-202605132114.xml.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290000000003-013-202605132114.xml.gz",
+            "system_timestamp": "2026-05-13 21:24:38.625430+03:00",
+            "task_id": "13699829-da9d-401f-8414-c1b8678cb321"
+        }
+    ]
+}

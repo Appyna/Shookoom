@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:25:20.310206+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:20.084027+03:00",
+            "task_id": "40e22fd3-ccb2-4c95-9d3f-c29aa0eedaee",
+            "file_name": "Price7290058140886-001-070-20260513-070018.gz",
+            "link": null,
+            "size": 16379
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:20.088365+03:00",
+            "task_id": "40e22fd3-ccb2-4c95-9d3f-c29aa0eedaee",
+            "file_name": "Price7290058140886-001-070-20260513-080008.gz",
+            "link": null,
+            "size": 58110
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:25:20.092179+03:00",
+            "task_id": "40e22fd3-ccb2-4c95-9d3f-c29aa0eedaee",
+            "file_name": "Price7290058140886-001-070-20260513-070018.gz",
+            "link_collected": null
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:25:20.289899+03:00",
+            "task_id": "40e22fd3-ccb2-4c95-9d3f-c29aa0eedaee",
+            "file_name": "Price7290058140886-001-070-20260513-070018.gz",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:25:19.840325+03:00",
+            "task_id": "40e22fd3-ccb2-4c95-9d3f-c29aa0eedaee",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:25:20.307192+03:00",
+            "task_id": "40e22fd3-ccb2-4c95-9d3f-c29aa0eedaee",
+            "folder_size": {
+                "size": 0.21556663513183594,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/RAMI_LEVY",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/RAMI_LEVY/Price7290058140886-001-070-20260513-070018.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290058140886-001-070-20260513-070018.gz",
+            "system_timestamp": "2026-05-13 21:25:20.294190+03:00",
+            "task_id": "40e22fd3-ccb2-4c95-9d3f-c29aa0eedaee"
+        }
+    ]
+}

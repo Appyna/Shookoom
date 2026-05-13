@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:24:52.702448+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:52.487945+03:00",
+            "task_id": "ba1f36d6-4fd7-4d55-afed-0da1aff323ec",
+            "file_name": "Promo7290455000004-001-202605132015-001",
+            "link": "https://laibcatalog.co.il/CompetitionRegulationsFiles\\latest\\7290455000004/Promo7290455000004-001-202605132015-001.xml.gz",
+            "size": 89200.64
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:52.489758+03:00",
+            "task_id": "ba1f36d6-4fd7-4d55-afed-0da1aff323ec",
+            "file_name": "Promo7290455000004-075-202605132015-001",
+            "link": "https://laibcatalog.co.il/CompetitionRegulationsFiles\\latest\\7290455000004/Promo7290455000004-075-202605132015-001.xml.gz",
+            "size": 54896.64
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:24:52.497185+03:00",
+            "task_id": "ba1f36d6-4fd7-4d55-afed-0da1aff323ec",
+            "file_name": "Promo7290455000004-001-202605132015-001",
+            "link_collected": "https://laibcatalog.co.il/CompetitionRegulationsFiles\\latest\\7290455000004/Promo7290455000004-001-202605132015-001.xml.gz"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:24:52.671102+03:00",
+            "task_id": "ba1f36d6-4fd7-4d55-afed-0da1aff323ec",
+            "file_name": "Promo7290455000004-001-202605132015-001",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:24:45.853186+03:00",
+            "task_id": "ba1f36d6-4fd7-4d55-afed-0da1aff323ec",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:24:52.691827+03:00",
+            "task_id": "ba1f36d6-4fd7-4d55-afed-0da1aff323ec",
+            "folder_size": {
+                "size": 3.1261472702026367,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/HET_COHEN",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/HET_COHEN/Promo7290455000004-001-202605132015-001.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Promo7290455000004-001-202605132015-001",
+            "system_timestamp": "2026-05-13 21:24:52.681804+03:00",
+            "task_id": "ba1f36d6-4fd7-4d55-afed-0da1aff323ec"
+        }
+    ]
+}

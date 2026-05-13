@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:25:05.626859+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:05.428973+03:00",
+            "task_id": "6561e527-2ce4-4df0-b696-a2e8761da58b",
+            "file_name": "NULLPromo7291059100008-001-011-20260513-210028.gz",
+            "link": null,
+            "size": 168
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:05.432340+03:00",
+            "task_id": "6561e527-2ce4-4df0-b696-a2e8761da58b",
+            "file_name": "Price7291059100008-001-001-20260513-070007.gz",
+            "link": null,
+            "size": 10881
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:25:05.436271+03:00",
+            "task_id": "6561e527-2ce4-4df0-b696-a2e8761da58b",
+            "file_name": "NULLPromo7291059100008-001-011-20260513-210028.gz",
+            "link_collected": null
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:25:05.603178+03:00",
+            "task_id": "6561e527-2ce4-4df0-b696-a2e8761da58b",
+            "file_name": "NULLPromo7291059100008-001-011-20260513-210028.gz",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:25:05.275315+03:00",
+            "task_id": "6561e527-2ce4-4df0-b696-a2e8761da58b",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:25:05.624725+03:00",
+            "task_id": "6561e527-2ce4-4df0-b696-a2e8761da58b",
+            "folder_size": {
+                "size": 0.00014972686767578125,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/POLIZER",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/POLIZER/NULLPromo7291059100008-001-011-20260513-210028.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "NULLPromo7291059100008-001-011-20260513-210028.gz",
+            "system_timestamp": "2026-05-13 21:25:05.609262+03:00",
+            "task_id": "6561e527-2ce4-4df0-b696-a2e8761da58b"
+        }
+    ]
+}

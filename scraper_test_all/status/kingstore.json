@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:24:54.141612+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:53.823659+03:00",
+            "task_id": "d01b5c03-e31f-46a1-a6cf-2028348dda00",
+            "file_name": "Price7290058108879-340-202605132100",
+            "link": "http://kingstore.binaprojects.com//Download.aspx?FileNm=Price7290058108879-340-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:53.825236+03:00",
+            "task_id": "d01b5c03-e31f-46a1-a6cf-2028348dda00",
+            "file_name": "Price7290058108879-339-202605132100",
+            "link": "http://kingstore.binaprojects.com//Download.aspx?FileNm=Price7290058108879-339-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:24:53.838388+03:00",
+            "task_id": "d01b5c03-e31f-46a1-a6cf-2028348dda00",
+            "file_name": "Price7290058108879-340-202605132100",
+            "link_collected": "http://kingstore.binaprojects.com//Download.aspx?FileNm=Price7290058108879-340-202605132100.gz"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:24:54.123901+03:00",
+            "task_id": "d01b5c03-e31f-46a1-a6cf-2028348dda00",
+            "file_name": "Price7290058108879-340-202605132100",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:24:53.169536+03:00",
+            "task_id": "d01b5c03-e31f-46a1-a6cf-2028348dda00",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:24:54.139993+03:00",
+            "task_id": "d01b5c03-e31f-46a1-a6cf-2028348dda00",
+            "folder_size": {
+                "size": 0.4961576461791992,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/KING_STORE",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/KING_STORE/Price7290058108879-340-202605132100.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290058108879-340-202605132100",
+            "system_timestamp": "2026-05-13 21:24:54.132012+03:00",
+            "task_id": "d01b5c03-e31f-46a1-a6cf-2028348dda00"
+        }
+    ]
+}

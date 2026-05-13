@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:25:20.920629+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:20.703914+03:00",
+            "task_id": "07df0c39-4aca-45b1-914b-20150e5ad5f8",
+            "file_name": "Price7290526500006-001-004-20260513-080007.gz",
+            "link": null,
+            "size": 46871
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:20.708341+03:00",
+            "task_id": "07df0c39-4aca-45b1-914b-20150e5ad5f8",
+            "file_name": "Price7290526500006-001-007-20260513-080003.gz",
+            "link": null,
+            "size": 59336
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:25:20.712836+03:00",
+            "task_id": "07df0c39-4aca-45b1-914b-20150e5ad5f8",
+            "file_name": "Price7290526500006-001-004-20260513-080007.gz",
+            "link_collected": null
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:25:20.910262+03:00",
+            "task_id": "07df0c39-4aca-45b1-914b-20150e5ad5f8",
+            "file_name": "Price7290526500006-001-004-20260513-080007.gz",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:25:20.314791+03:00",
+            "task_id": "07df0c39-4aca-45b1-914b-20150e5ad5f8",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:25:20.919373+03:00",
+            "task_id": "07df0c39-4aca-45b1-914b-20150e5ad5f8",
+            "folder_size": {
+                "size": 0.7501602172851562,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/SALACH_DABACH",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/SALACH_DABACH/Price7290526500006-001-004-20260513-080007.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290526500006-001-004-20260513-080007.gz",
+            "system_timestamp": "2026-05-13 21:25:20.914060+03:00",
+            "task_id": "07df0c39-4aca-45b1-914b-20150e5ad5f8"
+        }
+    ]
+}

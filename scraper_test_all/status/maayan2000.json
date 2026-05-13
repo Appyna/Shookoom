@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:24:55.074698+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:54.764950+03:00",
+            "task_id": "8fc8e787-0e96-4c6d-9d61-780401059db1",
+            "file_name": "Price7290058159628-064-202605132100",
+            "link": "http://maayan2000.binaprojects.com//Download.aspx?FileNm=Price7290058159628-064-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:54.768987+03:00",
+            "task_id": "8fc8e787-0e96-4c6d-9d61-780401059db1",
+            "file_name": "Price7290058159628-063-202605132100",
+            "link": "http://maayan2000.binaprojects.com//Download.aspx?FileNm=Price7290058159628-063-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:24:54.784780+03:00",
+            "task_id": "8fc8e787-0e96-4c6d-9d61-780401059db1",
+            "file_name": "Price7290058159628-064-202605132100",
+            "link_collected": "http://maayan2000.binaprojects.com//Download.aspx?FileNm=Price7290058159628-064-202605132100.gz"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:24:55.022559+03:00",
+            "task_id": "8fc8e787-0e96-4c6d-9d61-780401059db1",
+            "file_name": "Price7290058159628-064-202605132100",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:24:54.146575+03:00",
+            "task_id": "8fc8e787-0e96-4c6d-9d61-780401059db1",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:24:55.069259+03:00",
+            "task_id": "8fc8e787-0e96-4c6d-9d61-780401059db1",
+            "folder_size": {
+                "size": 0.6520395278930664,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/MAAYAN_2000",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/MAAYAN_2000/Price7290058159628-064-202605132100.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290058159628-064-202605132100",
+            "system_timestamp": "2026-05-13 21:24:55.038024+03:00",
+            "task_id": "8fc8e787-0e96-4c6d-9d61-780401059db1"
+        }
+    ]
+}

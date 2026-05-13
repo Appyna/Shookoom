@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:26:48.062388+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:26:47.917941+03:00",
+            "task_id": "b3e36c27-93e9-4df1-9259-8763eeeb3153",
+            "file_name": "NULLPromo7290055700007-0120-202605130700.gz",
+            "link": "https://prices.carrefour.co.il/20260513/NULLPromo7290055700007-0120-202605130700.gz",
+            "size": 216
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:26:47.926165+03:00",
+            "task_id": "b3e36c27-93e9-4df1-9259-8763eeeb3153",
+            "file_name": "NULLPromo7290055700007-0120-202605130800.gz",
+            "link": "https://prices.carrefour.co.il/20260513/NULLPromo7290055700007-0120-202605130800.gz",
+            "size": 216
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:26:47.932080+03:00",
+            "task_id": "b3e36c27-93e9-4df1-9259-8763eeeb3153",
+            "file_name": "NULLPromo7290055700007-0120-202605130700.gz",
+            "link_collected": "https://prices.carrefour.co.il/20260513/NULLPromo7290055700007-0120-202605130700.gz"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:26:48.031361+03:00",
+            "task_id": "b3e36c27-93e9-4df1-9259-8763eeeb3153",
+            "file_name": "NULLPromo7290055700007-0120-202605130700.gz",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:26:47.673602+03:00",
+            "task_id": "b3e36c27-93e9-4df1-9259-8763eeeb3153",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:26:48.060247+03:00",
+            "task_id": "b3e36c27-93e9-4df1-9259-8763eeeb3153",
+            "folder_size": {
+                "size": 0.000225067138671875,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/YAYNO_BITAN_AND_CARREFOUR",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/YAYNO_BITAN_AND_CARREFOUR/NULLPromo7290055700007-0120-202605130700.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "NULLPromo7290055700007-0120-202605130700.gz",
+            "system_timestamp": "2026-05-13 21:26:48.034035+03:00",
+            "task_id": "b3e36c27-93e9-4df1-9259-8763eeeb3153"
+        }
+    ]
+}

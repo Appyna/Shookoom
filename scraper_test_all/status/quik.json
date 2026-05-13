@@ -1,0 +1,31 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:25:19.836821+03:00"
+    },
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:25:05.635588+03:00",
+            "task_id": "80115004-4940-4cf2-8a06-512153ea3da7",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:25:19.825394+03:00",
+            "task_id": "80115004-4940-4cf2-8a06-512153ea3da7",
+            "folder_size": {
+                "size": 0.0,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/QUIK",
+                "folder_content": []
+            },
+            "completed_successfully": false
+        }
+    ]
+}

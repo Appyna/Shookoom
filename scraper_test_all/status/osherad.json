@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:25:05.272760+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:05.084197+03:00",
+            "task_id": "4e078c25-42c9-40ec-832b-dda54939b72f",
+            "file_name": "Price7290103152017-001-001-20260513-090009.gz",
+            "link": null,
+            "size": 9065
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:05.086065+03:00",
+            "task_id": "4e078c25-42c9-40ec-832b-dda54939b72f",
+            "file_name": "Price7290103152017-001-001-20260513-100019.gz",
+            "link": null,
+            "size": 9981
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:25:05.087700+03:00",
+            "task_id": "4e078c25-42c9-40ec-832b-dda54939b72f",
+            "file_name": "Price7290103152017-001-001-20260513-090009.gz",
+            "link_collected": null
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:25:05.256513+03:00",
+            "task_id": "4e078c25-42c9-40ec-832b-dda54939b72f",
+            "file_name": "Price7290103152017-001-001-20260513-090009.gz",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:25:04.858989+03:00",
+            "task_id": "4e078c25-42c9-40ec-832b-dda54939b72f",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:25:05.270845+03:00",
+            "task_id": "4e078c25-42c9-40ec-832b-dda54939b72f",
+            "folder_size": {
+                "size": 0.07996654510498047,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/OSHER_AD",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/OSHER_AD/Price7290103152017-001-001-20260513-090009.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290103152017-001-001-20260513-090009.gz",
+            "system_timestamp": "2026-05-13 21:25:05.259355+03:00",
+            "task_id": "4e078c25-42c9-40ec-832b-dda54939b72f"
+        }
+    ]
+}

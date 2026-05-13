@@ -1,38 +1,27 @@
-name: Import quotidien des prix Kaggle
-
+name: Import quotidien des prix Poomby
 on:
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
-
 jobs:
   import:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
+      - name: Install wget
+        run: sudo apt-get install -y wget
       - name: Install dependencies
-        run: pip install kaggle kagglehub openai supabase requests
-
-      - name: Setup Kaggle credentials
-        run: |
-          mkdir -p ~/.kaggle
-          echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
-
+        run: pip install il-supermarket-scraper openai supabase requests
       - name: Import data to Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: python scripts/import_kaggle.py
-
       - name: Done
-        run: echo "✅ Import Shookoom terminé - $(date)"
+        run: echo "✅ Import Poomby terminé - $(date)"

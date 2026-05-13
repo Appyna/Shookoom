@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:24:40.937984+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:40.722688+03:00",
+            "task_id": "6d647f61-0720-4a03-ad77-dfd77c399aae",
+            "file_name": "Price7290058197699-970-202605132100",
+            "link": "http://goodpharm.binaprojects.com//Download.aspx?FileNm=Price7290058197699-970-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:40.765239+03:00",
+            "task_id": "6d647f61-0720-4a03-ad77-dfd77c399aae",
+            "file_name": "Price7290058197699-953-202605132100",
+            "link": "http://goodpharm.binaprojects.com//Download.aspx?FileNm=Price7290058197699-953-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:24:40.784508+03:00",
+            "task_id": "6d647f61-0720-4a03-ad77-dfd77c399aae",
+            "file_name": "Price7290058197699-970-202605132100",
+            "link_collected": "http://goodpharm.binaprojects.com//Download.aspx?FileNm=Price7290058197699-970-202605132100.gz"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:24:40.924329+03:00",
+            "task_id": "6d647f61-0720-4a03-ad77-dfd77c399aae",
+            "file_name": "Price7290058197699-970-202605132100",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:24:39.996130+03:00",
+            "task_id": "6d647f61-0720-4a03-ad77-dfd77c399aae",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:24:40.935645+03:00",
+            "task_id": "6d647f61-0720-4a03-ad77-dfd77c399aae",
+            "folder_size": {
+                "size": 0.32312679290771484,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/GOOD_PHARM",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/GOOD_PHARM/Price7290058197699-970-202605132100.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290058197699-970-202605132100",
+            "system_timestamp": "2026-05-13 21:24:40.929342+03:00",
+            "task_id": "6d647f61-0720-4a03-ad77-dfd77c399aae"
+        }
+    ]
+}

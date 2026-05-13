@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:25:03.250567+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:02.971465+03:00",
+            "task_id": "b2aaba6b-bfb7-4e6f-a732-badeb77b164d",
+            "file_name": "Price7290058289400-004-202605132100",
+            "link": "http://ktshivuk.binaprojects.com//Download.aspx?FileNm=Price7290058289400-004-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:25:02.975213+03:00",
+            "task_id": "b2aaba6b-bfb7-4e6f-a732-badeb77b164d",
+            "file_name": "Price7290058289400-003-202605132100",
+            "link": "http://ktshivuk.binaprojects.com//Download.aspx?FileNm=Price7290058289400-003-202605132100.gz",
+            "size": null
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:25:02.983316+03:00",
+            "task_id": "b2aaba6b-bfb7-4e6f-a732-badeb77b164d",
+            "file_name": "Price7290058289400-004-202605132100",
+            "link_collected": "http://ktshivuk.binaprojects.com//Download.aspx?FileNm=Price7290058289400-004-202605132100.gz"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:25:03.231924+03:00",
+            "task_id": "b2aaba6b-bfb7-4e6f-a732-badeb77b164d",
+            "file_name": "Price7290058289400-004-202605132100",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:25:02.636192+03:00",
+            "task_id": "b2aaba6b-bfb7-4e6f-a732-badeb77b164d",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:25:03.248344+03:00",
+            "task_id": "b2aaba6b-bfb7-4e6f-a732-badeb77b164d",
+            "folder_size": {
+                "size": 1.4983711242675781,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/MESHMAT_YOSEF_2",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/MESHMAT_YOSEF_2/Price7290058289400-004-202605132100.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290058289400-004-202605132100",
+            "system_timestamp": "2026-05-13 21:25:03.234703+03:00",
+            "task_id": "b2aaba6b-bfb7-4e6f-a732-badeb77b164d"
+        }
+    ]
+}

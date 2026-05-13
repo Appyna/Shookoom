@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:26:46.212580+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:26:45.850915+03:00",
+            "task_id": "6ad8691e-cd44-43f1-8adc-4a2c12f43844",
+            "file_name": "Promo7290696200003-001-090-20260513-204654",
+            "link": "https://laibcatalog.co.il/webapi/7290696200003/Promo7290696200003-001-090-20260513-204654.gz",
+            "size": 143124
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:26:45.854442+03:00",
+            "task_id": "6ad8691e-cd44-43f1-8adc-4a2c12f43844",
+            "file_name": "Promo7290696200003-001-097-20260513-202921",
+            "link": "https://laibcatalog.co.il/webapi/7290696200003/Promo7290696200003-001-097-20260513-202921.gz",
+            "size": 53770
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:26:45.858838+03:00",
+            "task_id": "6ad8691e-cd44-43f1-8adc-4a2c12f43844",
+            "file_name": "Promo7290696200003-001-090-20260513-204654",
+            "link_collected": "https://laibcatalog.co.il/webapi/7290696200003/Promo7290696200003-001-090-20260513-204654.gz"
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:26:46.189472+03:00",
+            "task_id": "6ad8691e-cd44-43f1-8adc-4a2c12f43844",
+            "file_name": "Promo7290696200003-001-090-20260513-204654",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:26:31.309887+03:00",
+            "task_id": "6ad8691e-cd44-43f1-8adc-4a2c12f43844",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:26:46.207126+03:00",
+            "task_id": "6ad8691e-cd44-43f1-8adc-4a2c12f43844",
+            "folder_size": {
+                "size": 8.630051612854004,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/VICTORY_NEW_SOURCE",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/VICTORY_NEW_SOURCE/Promo7290696200003-001-090-20260513-204654.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Promo7290696200003-001-090-20260513-204654",
+            "system_timestamp": "2026-05-13 21:26:46.191737+03:00",
+            "task_id": "6ad8691e-cd44-43f1-8adc-4a2c12f43844"
+        }
+    ]
+}

@@ -1,0 +1,75 @@
+{
+    "_metadata": {
+        "last_modified": "2026-05-13T21:24:39.517596+03:00"
+    },
+    "events": [
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:39.302460+03:00",
+            "task_id": "8ee28519-02ac-4b75-8e6c-b09d469e7e5f",
+            "file_name": "Price7290492000005-001-401-20260513-090009.gz",
+            "link": null,
+            "size": 529
+        },
+        {
+            "status": "saw",
+            "system_timestamp": "2026-05-13 21:24:39.306344+03:00",
+            "task_id": "8ee28519-02ac-4b75-8e6c-b09d469e7e5f",
+            "file_name": "Price7290492000005-001-401-20260513-150005.gz",
+            "link": null,
+            "size": 658
+        },
+        {
+            "status": "collected",
+            "system_timestamp": "2026-05-13 21:24:39.309499+03:00",
+            "task_id": "8ee28519-02ac-4b75-8e6c-b09d469e7e5f",
+            "file_name": "Price7290492000005-001-401-20260513-090009.gz",
+            "link_collected": null
+        },
+        {
+            "status": "downloaded",
+            "system_timestamp": "2026-05-13 21:24:39.472262+03:00",
+            "task_id": "8ee28519-02ac-4b75-8e6c-b09d469e7e5f",
+            "file_name": "Price7290492000005-001-401-20260513-090009.gz",
+            "downloaded_successfully": true,
+            "extracted_successfully": true,
+            "error_message": null,
+            "restart_and_retry": false
+        }
+    ],
+    "global_status": [
+        {
+            "status": "started",
+            "system_timestamp": "2026-05-13 21:24:39.092232+03:00",
+            "task_id": "8ee28519-02ac-4b75-8e6c-b09d469e7e5f",
+            "limit": 1,
+            "files_requested": null,
+            "store_id": null,
+            "files_names_to_scrape": null,
+            "when_date": null,
+            "filter_null": false,
+            "filter_zero": false
+        },
+        {
+            "status": "estimated_size",
+            "system_timestamp": "2026-05-13 21:24:39.512695+03:00",
+            "task_id": "8ee28519-02ac-4b75-8e6c-b09d469e7e5f",
+            "folder_size": {
+                "size": 0.0009899139404296875,
+                "unit": "MB",
+                "folder": "/Users/gabriel/Downloads/shookoom/scraper_test_all/DOR_ALON",
+                "folder_content": [
+                    "/Users/gabriel/Downloads/shookoom/scraper_test_all/DOR_ALON/Price7290492000005-001-401-20260513-090009.xml"
+                ]
+            },
+            "completed_successfully": true
+        }
+    ],
+    "verified_downloads": [
+        {
+            "file_name": "Price7290492000005-001-401-20260513-090009.gz",
+            "system_timestamp": "2026-05-13 21:24:39.499196+03:00",
+            "task_id": "8ee28519-02ac-4b75-8e6c-b09d469e7e5f"
+        }
+    ]
+}
