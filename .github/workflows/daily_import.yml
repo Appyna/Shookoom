@@ -19,7 +19,13 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install kagglehub openai supabase
+        run: pip install kagglehub openai supabase requests
+
+      - name: Setup Kaggle credentials
+        run: |
+          mkdir -p ~/.config/kaggle
+          echo '{"token":"${{ secrets.KAGGLE_API_TOKEN }}"}' > ~/.config/kaggle/api_token.json
+          chmod 600 ~/.config/kaggle/api_token.json
 
       - name: Import data to Supabase
         env:
