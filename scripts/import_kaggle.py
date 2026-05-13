@@ -1,6 +1,6 @@
 """
 import_kaggle.py — Shookoom
-Import CSV Kaggle → Supabase (products + prices + chains)
+Import CSV Kaggle → Supabase (chains + stores + products + prices)
 """
 import os, re, json, time, subprocess, sys, csv
 from datetime import datetime
@@ -16,28 +16,27 @@ DATA_DIR = "./kaggle_data"
 
 def supa_post(table, records, upsert_on=None):
     if not records:
-        return
+        return []
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates,return=representation" if upsert_on else "return=representation"
     }
-    if upsert_on:
-        headers["Prefer"] = "resolution=merge-duplicates,return=representation"
-    else:
-        headers["Prefer"] = "return=representation"
     data = json.dumps(records, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        f"{SUPABASE_URL}/rest/v1/{table}",
-        data=data, headers=headers, method="POST"
-    )
+    url = f"{SUPABASE_URL}/rest/v1/{table}"
+    if upsert_on:
+        url += f"?on_conflict={upsert_on}"
+    req = urllib.request.Request(url, data=data, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read())
     except urllib.error.HTTPError as e:
         print(f"  ⚠️  Supabase {table} {e.code}: {e.read().decode()[:200]}")
+        return []
     except Exception as e:
         print(f"  ⚠️  Supabase {table}: {e}")
+        return []
 
 def supa_get(table, params=""):
     headers = {
@@ -55,7 +54,7 @@ def supa_get(table, params=""):
         print(f"  ⚠️  Supabase GET {table}: {e}")
         return []
 
-# ── 1. Téléchargement ─────────────────────────────────────────────────────────
+# ── 1. Téléchargement ────────────────────────────────────────────────────────
 print("📥  Téléchargement des données Kaggle...")
 os.makedirs(DATA_DIR, exist_ok=True)
 result = subprocess.run(
@@ -69,7 +68,7 @@ if result.returncode != 0:
     sys.exit(1)
 print("✅  Téléchargé")
 
-# ── 2. Fichiers CSV ───────────────────────────────────────────────────────────
+# ── 2. Fichiers CSV ──────────────────────────────────────────────────────────
 all_files = []
 for root, dirs, files in os.walk(DATA_DIR):
     for f in files:
@@ -78,7 +77,7 @@ for root, dirs, files in os.walk(DATA_DIR):
 csv_files = [f for f in all_files if f.endswith(".csv") and "price_full_file" in f]
 print(f"📂  {len(csv_files)} fichiers CSV trouvés")
 
-# ── 3. Traduction OpenAI ──────────────────────────────────────────────────────
+# ── 3. Traduction OpenAI ─────────────────────────────────────────────────────
 def translate_batch(texts):
     if not OPENAI_API_KEY:
         return texts
@@ -104,10 +103,11 @@ def translate_batch(texts):
         print(f"  ⚠️  Traduction: {e}")
         return texts
 
-# ── 4. Traitement ─────────────────────────────────────────────────────────────
+# ── 4. Traitement ────────────────────────────────────────────────────────────
 total_imported = 0
 BATCH = 50
 product_cache = {}
+store_cache = set()
 
 for filepath in csv_files[:10]:
     chain_name = os.path.basename(filepath)
@@ -127,11 +127,14 @@ for filepath in csv_files[:10]:
                     (row.get("itemname") or row.get("ItemName") or "").strip())
                 if not name_he:
                     continue
+                store_id = str(row.get("storeid") or row.get("storeId") or "").strip()
                 rows.append({
-                    "barcode": str(row.get("itemcode") or row.get("ItemCode") or ""),
+                    "barcode": str(row.get("itemcode") or row.get("ItemCode") or "").strip(),
                     "name_he": name_he,
-                    "chain_id": str(row.get("chainid") or row.get("chainId") or chain_name),
-                    "store_id": str(row.get("storeid") or row.get("storeId") or ""),
+                    "chain_id": str(row.get("chainid") or row.get("chainId") or chain_name).strip(),
+                    "store_id": store_id if store_id else None,
+                    "city_he": str(row.get("city") or row.get("City") or "").strip() or None,
+                    "address": str(row.get("address") or row.get("Address") or "").strip() or None,
                     "price_raw": row.get("itemprice") or row.get("ItemPrice") or "0",
                 })
     except Exception as e:
@@ -143,12 +146,35 @@ for filepath in csv_files[:10]:
         continue
 
     chain_id = rows[0]["chain_id"]
+
+    # Insertion chain
     supa_post("chains", [{
         "id": chain_id,
         "name_fr": chain_name.replace("_", " ").title(),
         "name_he": chain_name
     }], upsert_on="id")
 
+    # Insertion stores
+    print(f"  🏬  Insertion stores...")
+    stores_to_insert = []
+    for row in rows:
+        if not row["store_id"]:
+            continue
+        store_key = row["store_id"]
+        if store_key not in store_cache:
+            store_cache.add(store_key)
+            stores_to_insert.append({
+                "id": row["store_id"],
+                "chain_id": chain_id,
+                "city_he": row["city_he"],
+                "city_fr": None,
+                "address": row["address"],
+            })
+    for i in range(0, len(stores_to_insert), BATCH):
+        supa_post("stores", stores_to_insert[i:i+BATCH], upsert_on="id")
+    print(f"  ✅  {len(stores_to_insert)} stores insérés")
+
+    # Traduction
     print(f"  🌐  Traduction...")
     names_he = [r["name_he"] for r in rows]
     names_fr = list(names_he)
@@ -159,10 +185,13 @@ for filepath in csv_files[:10]:
             names_fr[i+j] = translated[j] if j < len(translated) else batch[j]
         time.sleep(0.3)
 
+    # Insertion produits
     print(f"  💾  Insertion produits...")
     product_records = []
+    seen_barcodes = set()
     for i, row in enumerate(rows):
-        if row["barcode"] not in product_cache:
+        if row["barcode"] and row["barcode"] not in product_cache and row["barcode"] not in seen_barcodes:
+            seen_barcodes.add(row["barcode"])
             product_records.append({
                 "barcode": row["barcode"],
                 "name_he": row["name_he"],
@@ -170,14 +199,14 @@ for filepath in csv_files[:10]:
             })
 
     for i in range(0, len(product_records), BATCH):
-        batch = product_records[i:i+BATCH]
-        result = supa_post("products", batch, upsert_on="barcode")
+        result = supa_post("products", product_records[i:i+BATCH], upsert_on="barcode")
         if result and isinstance(result, list):
             for p in result:
                 if p.get("barcode"):
                     product_cache[p["barcode"]] = p["id"]
 
-    missing = [r["barcode"] for r in rows if r["barcode"] not in product_cache and r["barcode"]]
+    # Récupérer les IDs manquants
+    missing = [r["barcode"] for r in rows if r["barcode"] and r["barcode"] not in product_cache]
     if missing:
         for i in range(0, len(missing), 20):
             batch_barcodes = missing[i:i+20]
@@ -187,6 +216,7 @@ for filepath in csv_files[:10]:
                 for p in results:
                     product_cache[p["barcode"]] = p["id"]
 
+    # Insertion prix
     print(f"  💰  Insertion prix...")
     price_records = []
     for i, row in enumerate(rows):
