@@ -2,3 +2,8 @@ node_modules/
 .next/
 .env.local
 data/
+scraper_test_all/
+_scraper_test_ramilevy/
+scraper_dumps/
+status/
+logging.log
