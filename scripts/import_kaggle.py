@@ -1,8 +1,8 @@
 """
 import_kaggle.py — Shookoom
-Debug structure JSON Kaggle
+Import CSV Kaggle → Supabase avec traduction OpenAI
 """
-import os, re, json, time, subprocess, sys
+import os, re, json, time, subprocess, sys, csv
 from datetime import datetime
 
 print("🚀  Import Shookoom démarré")
@@ -16,7 +16,6 @@ DATA_DIR = "./kaggle_data"
 # ── 1. Téléchargement ─────────────────────────────────────────────────────────
 print("📥  Téléchargement des données Kaggle...")
 os.makedirs(DATA_DIR, exist_ok=True)
-
 result = subprocess.run(
     ["kaggle", "datasets", "download",
      "-d", "erlichsefi/israeli-supermarkets-2024",
@@ -27,45 +26,138 @@ print(f"CODE: {result.returncode}")
 if result.returncode != 0:
     print(f"STDERR: {result.stderr}")
     sys.exit(1)
-print(f"✅  Téléchargé")
+print("✅  Téléchargé")
 
-# ── 2. Lister fichiers ────────────────────────────────────────────────────────
+# ── 2. Trouver les fichiers CSV de prix ───────────────────────────────────────
 all_files = []
 for root, dirs, files in os.walk(DATA_DIR):
     for f in files:
         all_files.append(os.path.join(root, f))
 
-print(f"📂  {len(all_files)} fichiers au total")
-print(f"Exemples: {[os.path.basename(f) for f in all_files[:5]]}")
+csv_files = [f for f in all_files if f.endswith(".csv") and "price_full_file" in f]
+if not csv_files:
+    csv_files = [f for f in all_files if f.endswith(".csv") and "price" in f]
 
-json_files = [f for f in all_files if f.endswith(".json") and "price_full_file" in f]
-print(f"📂  {len(json_files)} fichiers price_full_file")
+print(f"📂  {len(csv_files)} fichiers CSV de prix trouvés")
 
-# ── 3. Debug structure des 3 premiers fichiers ────────────────────────────────
-for filepath in json_files[:3]:
-    print(f"\n📄  Fichier: {os.path.basename(filepath)}")
+# Debug: afficher les colonnes du premier fichier
+if csv_files:
+    with open(csv_files[0], encoding="utf-8", errors="ignore") as f:
+        reader = csv.reader(f)
+        headers = next(reader, [])
+        first_row = next(reader, [])
+    print(f"  Colonnes: {headers[:10]}")
+    print(f"  Première ligne: {first_row[:10]}")
+
+# ── 3. Traduction OpenAI ──────────────────────────────────────────────────────
+import urllib.request
+
+def translate_batch(texts):
+    if not OPENAI_API_KEY:
+        return texts
+    prompt = "Traduis ces noms de produits hébreux en français. Réponds UNIQUEMENT avec un JSON array des traductions dans le même ordre:\n" + json.dumps(texts, ensure_ascii=False)
+    data = json.dumps({
+        "model": "gpt-4o-mini",
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 1000
+    }).encode()
+    req = urllib.request.Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=data,
+        headers={"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"}
+    )
     try:
-        with open(filepath, encoding="utf-8") as f:
-            raw = json.load(f)
-        print(f"  Type racine: {type(raw).__name__}")
-        if isinstance(raw, dict):
-            print(f"  Keys: {list(raw.keys())[:8]}")
-            for k, v in list(raw.items())[:4]:
-                if isinstance(v, list):
-                    print(f"    '{k}': liste de {len(v)} items")
-                    if v and isinstance(v[0], dict):
-                        print(f"      Premier item keys: {list(v[0].keys())[:8]}")
-                        print(f"      Premier item: {json.dumps(v[0], ensure_ascii=False)[:300]}")
-                elif isinstance(v, dict):
-                    print(f"    '{k}': dict avec keys {list(v.keys())[:5]}")
-                else:
-                    print(f"    '{k}': {type(v).__name__} = {str(v)[:100]}")
-        elif isinstance(raw, list):
-            print(f"  Liste de {len(raw)} items")
-            if raw and isinstance(raw[0], dict):
-                print(f"  Premier item keys: {list(raw[0].keys())[:8]}")
-                print(f"  Premier item: {json.dumps(raw[0], ensure_ascii=False)[:400]}")
+        with urllib.request.urlopen(req, timeout=30) as r:
+            resp = json.loads(r.read())
+            content = resp["choices"][0]["message"]["content"].strip()
+            content = re.sub(r"```json|```", "", content).strip()
+            return json.loads(content)
     except Exception as e:
-        print(f"  ❌ Erreur: {e}")
+        print(f"  ⚠️  Traduction échouée: {e}")
+        return texts
 
-print("\n🔍  Debug terminé — analyse de la structure ci-dessus")
+# ── 4. Envoyer dans Supabase ──────────────────────────────────────────────────
+def supabase_upsert(records):
+    if not SUPABASE_URL or not SUPABASE_ANON_KEY:
+        print("⚠️  Variables Supabase manquantes")
+        return
+    data = json.dumps(records).encode()
+    req = urllib.request.Request(
+        f"{SUPABASE_URL}/rest/v1/products",
+        data=data,
+        headers={
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "resolution=merge-duplicates"
+        },
+        method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return r.status
+    except Exception as e:
+        print(f"  ⚠️  Erreur Supabase: {e}")
+
+# ── 5. Traitement des fichiers CSV ────────────────────────────────────────────
+total_imported = 0
+BATCH = 50
+
+for filepath in csv_files[:10]:
+    chain = os.path.basename(filepath)
+    for suffix in ["_price_full_file.csv", "_price_file.csv", ".csv"]:
+        chain = chain.replace(suffix, "")
+    chain = chain.replace("price_full_file_", "").replace("price_file_", "")
+
+    print(f"\n🏪  Traitement: {chain}")
+    records = []
+    names_he = []
+
+    try:
+        with open(filepath, encoding="utf-8", errors="ignore") as f:
+            reader = csv.DictReader(f)
+            for i, row in enumerate(reader):
+                if i >= 2000:
+                    break
+                name_he = (row.get("ItemName") or row.get("item_name") or row.get("name") or "").strip()
+                if not name_he:
+                    continue
+                barcode = str(row.get("ItemCode") or row.get("item_code") or row.get("barcode") or "")
+                price_raw = row.get("ItemPrice") or row.get("item_price") or row.get("price") or "0"
+                try:
+                    price = float(str(price_raw).replace(",", "."))
+                except:
+                    price = 0
+                records.append({
+                    "barcode": barcode,
+                    "name_he": name_he,
+                    "name_fr": "",
+                    "price": price,
+                    "chain": chain,
+                    "updated_at": datetime.now().isoformat()
+                })
+                names_he.append(name_he)
+    except Exception as e:
+        print(f"  ⚠️  Erreur lecture: {e}")
+        continue
+
+    print(f"  📦  {len(records)} produits trouvés")
+    if not records:
+        continue
+
+    print(f"  🌐  Traduction de {len(records)} produits...")
+    for i in range(0, len(records), BATCH):
+        batch_names = names_he[i:i+BATCH]
+        translated = translate_batch(batch_names)
+        for j, rec in enumerate(records[i:i+BATCH]):
+            rec["name_fr"] = translated[j] if j < len(translated) else rec["name_he"]
+        time.sleep(0.5)
+
+    print(f"  💾  Envoi dans Supabase...")
+    for i in range(0, len(records), BATCH):
+        supabase_upsert(records[i:i+BATCH])
+
+    total_imported += len(records)
+    print(f"  ✅  {len(records)} produits importés")
+
+print(f"\n🎉  Import terminé: {total_imported} produits au total")
