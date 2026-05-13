@@ -19,7 +19,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install kaggle openai supabase requests
+        run: pip install kaggle kagglehub openai supabase requests
 
       - name: Setup Kaggle credentials
         run: |
