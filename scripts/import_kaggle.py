@@ -40,15 +40,6 @@ if not csv_files:
 
 print(f"📂  {len(csv_files)} fichiers CSV de prix trouvés")
 
-# Debug: afficher les colonnes du premier fichier
-if csv_files:
-    with open(csv_files[0], encoding="utf-8", errors="ignore") as f:
-        reader = csv.reader(f)
-        headers = next(reader, [])
-        first_row = next(reader, [])
-    print(f"  Colonnes: {headers[:10]}")
-    print(f"  Première ligne: {first_row[:10]}")
-
 # ── 3. Traduction OpenAI ──────────────────────────────────────────────────────
 import urllib.request
 
@@ -119,11 +110,26 @@ for filepath in csv_files[:10]:
             for i, row in enumerate(reader):
                 if i >= 2000:
                     break
-                name_he = (row.get("ItemName") or row.get("item_name") or row.get("name") or "").strip()
+                name_he = (
+                    row.get("itemname") or
+                    row.get("ItemName") or
+                    row.get("item_name") or
+                    row.get("name") or ""
+                ).strip()
                 if not name_he:
                     continue
-                barcode = str(row.get("ItemCode") or row.get("item_code") or row.get("barcode") or "")
-                price_raw = row.get("ItemPrice") or row.get("item_price") or row.get("price") or "0"
+                barcode = str(
+                    row.get("itemcode") or
+                    row.get("ItemCode") or
+                    row.get("item_code") or
+                    row.get("barcode") or ""
+                )
+                price_raw = (
+                    row.get("itemprice") or
+                    row.get("ItemPrice") or
+                    row.get("item_price") or
+                    row.get("price") or "0"
+                )
                 try:
                     price = float(str(price_raw).replace(",", "."))
                 except:
