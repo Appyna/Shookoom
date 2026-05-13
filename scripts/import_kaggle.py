@@ -1,17 +1,59 @@
 """
 import_kaggle.py — Shookoom
-Import CSV Kaggle → Supabase (table product_prices)
+Import CSV Kaggle → Supabase (products + prices + chains)
 """
 import os, re, json, time, subprocess, sys, csv
 from datetime import datetime
+import urllib.request, urllib.error
 
 print("🚀  Import Shookoom démarré")
 print(f"🕐  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY")
+SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 DATA_DIR = "./kaggle_data"
+
+def supa_post(table, records, upsert_on=None):
+    if not records:
+        return
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+    }
+    if upsert_on:
+        headers["Prefer"] = f"resolution=merge-duplicates,return=representation"
+    else:
+        headers["Prefer"] = "return=representation"
+    data = json.dumps(records, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        f"{SUPABASE_URL}/rest/v1/{table}",
+        data=data, headers=headers, method="POST"
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        print(f"  ⚠️  Supabase {table} {e.code}: {e.read().decode()[:200]}")
+    except Exception as e:
+        print(f"  ⚠️  Supabase {table}: {e}")
+
+def supa_get(table, params=""):
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+    }
+    req = urllib.request.Request(
+        f"{SUPABASE_URL}/rest/v1/{table}?{params}",
+        headers=headers
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    except Exception as e:
+        print(f"  ⚠️  Supabase GET {table}: {e}")
+        return []
 
 # ── 1. Téléchargement ─────────────────────────────────────────────────────────
 print("📥  Téléchargement des données Kaggle...")
@@ -22,31 +64,24 @@ result = subprocess.run(
      "--unzip", "-p", DATA_DIR],
     capture_output=True, text=True
 )
-print(f"CODE: {result.returncode}")
 if result.returncode != 0:
-    print(f"STDERR: {result.stderr}")
+    print(f"❌  {result.stderr}")
     sys.exit(1)
 print("✅  Téléchargé")
 
-# ── 2. Trouver les fichiers CSV ───────────────────────────────────────────────
+# ── 2. Fichiers CSV ───────────────────────────────────────────────────────────
 all_files = []
 for root, dirs, files in os.walk(DATA_DIR):
     for f in files:
         all_files.append(os.path.join(root, f))
 
 csv_files = [f for f in all_files if f.endswith(".csv") and "price_full_file" in f]
-if not csv_files:
-    csv_files = [f for f in all_files if f.endswith(".csv") and "price" in f]
-
 print(f"📂  {len(csv_files)} fichiers CSV trouvés")
 
 # ── 3. Traduction OpenAI ──────────────────────────────────────────────────────
-import urllib.request
-
 def translate_batch(texts):
     if not OPENAI_API_KEY:
         return texts
-    # Nettoyer les textes
     clean = [re.sub(r'[\x00-\x1f\x7f]', ' ', t).strip() for t in texts]
     prompt = "Traduis ces noms de produits hébreux en français. Réponds UNIQUEMENT avec un JSON array des traductions dans le même ordre:\n" + json.dumps(clean, ensure_ascii=False)
     data = json.dumps({
@@ -66,104 +101,124 @@ def translate_batch(texts):
             content = re.sub(r"```json|```", "", content).strip()
             return json.loads(content)
     except Exception as e:
-        print(f"  ⚠️  Traduction échouée: {e}")
+        print(f"  ⚠️  Traduction: {e}")
         return texts
 
-# ── 4. Envoyer dans Supabase ──────────────────────────────────────────────────
-def supabase_upsert(records):
-    if not SUPABASE_URL or not SUPABASE_ANON_KEY:
-        print("⚠️  Variables Supabase manquantes")
-        return
-    data = json.dumps(records, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        f"{SUPABASE_URL}/rest/v1/product_prices",
-        data=data,
-        headers={
-            "apikey": SUPABASE_ANON_KEY,
-            "Authorization": f"Bearer {SUPABASE_ANON_KEY}",
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
-        },
-        method="POST"
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return r.status
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()[:200]
-        print(f"  ⚠️  Erreur Supabase {e.code}: {body}")
-    except Exception as e:
-        print(f"  ⚠️  Erreur Supabase: {e}")
-
-# ── 5. Traitement ─────────────────────────────────────────────────────────────
+# ── 4. Traitement ─────────────────────────────────────────────────────────────
 total_imported = 0
 BATCH = 50
 
+# Cache produits déjà insérés (barcode → product_id)
+product_cache = {}
+
 for filepath in csv_files[:10]:
-    chain = os.path.basename(filepath)
+    chain_name = os.path.basename(filepath)
     for suffix in ["_price_full_file.csv", "_price_file.csv", ".csv"]:
-        chain = chain.replace(suffix, "")
-    chain = chain.replace("price_full_file_", "").replace("price_file_", "")
+        chain_name = chain_name.replace(suffix, "")
 
-    print(f"\n🏪  Traitement: {chain}")
-    records = []
-    names_he = []
+    print(f"\n🏪  Traitement: {chain_name}")
 
+    # Lire le CSV
+    rows = []
     try:
         with open(filepath, encoding="utf-8", errors="ignore") as f:
             reader = csv.DictReader(f)
             for i, row in enumerate(reader):
                 if i >= 2000:
                     break
-                name_he = (
-                    row.get("itemname") or row.get("ItemName") or ""
-                ).strip()
-                name_he = re.sub(r'[\x00-\x1f\x7f]', ' ', name_he).strip()
+                name_he = re.sub(r'[\x00-\x1f\x7f]', ' ',
+                    (row.get("itemname") or row.get("ItemName") or "").strip())
                 if not name_he:
                     continue
-                barcode = str(row.get("itemcode") or row.get("ItemCode") or "")
-                price_raw = row.get("itemprice") or row.get("ItemPrice") or "0"
-                store_id = str(row.get("storeid") or row.get("storeId") or "")
-                chain_id = str(row.get("chainid") or row.get("chainId") or "")
-                try:
-                    price = float(str(price_raw).replace(",", "."))
-                except:
-                    price = 0
-                records.append({
-                    "barcode": barcode,
+                rows.append({
+                    "barcode": str(row.get("itemcode") or row.get("ItemCode") or ""),
                     "name_he": name_he,
-                    "name_fr": "",
-                    "price": price,
-                    "chain_id": chain_id,
-                    "chain_name": chain,
-                    "store_id": store_id,
-                    "price_updated_at": datetime.now().isoformat()
+                    "chain_id": str(row.get("chainid") or row.get("chainId") or chain_name),
+                    "store_id": str(row.get("storeid") or row.get("storeId") or ""),
+                    "price_raw": row.get("itemprice") or row.get("ItemPrice") or "0",
                 })
-                names_he.append(name_he)
     except Exception as e:
-        print(f"  ⚠️  Erreur lecture: {e}")
+        print(f"  ⚠️  Lecture: {e}")
         continue
 
-    print(f"  📦  {len(records)} produits trouvés")
-    if not records:
+    print(f"  📦  {len(rows)} lignes")
+    if not rows:
         continue
 
-    print(f"  🌐  Traduction de {len(records)} produits...")
-    for i in range(0, len(records), BATCH):
-        batch_names = names_he[i:i+BATCH]
-        translated = translate_batch(batch_names)
-        for j, rec in enumerate(records[i:i+BATCH]):
-            rec["name_fr"] = translated[j] if j < len(translated) else rec["name_he"]
+    # Insérer la chaîne
+    chain_id = rows[0]["chain_id"] if rows else chain_name
+    supa_post("chains", [{
+        "id": chain_id,
+        "name_fr": chain_name.replace("_", " ").title(),
+        "name_he": chain_name
+    }], upsert_on="id")
+
+    # Traduire les noms
+    print(f"  🌐  Traduction...")
+    names_he = [r["name_he"] for r in rows]
+    names_fr = list(names_he)
+    for i in range(0, len(rows), BATCH):
+        batch = names_he[i:i+BATCH]
+        translated = translate_batch(batch)
+        for j in range(len(batch)):
+            names_fr[i+j] = translated[j] if j < len(translated) else batch[j]
         time.sleep(0.3)
 
-    print(f"  💾  Envoi dans Supabase...")
-    success = 0
-    for i in range(0, len(records), BATCH):
-        result = supabase_upsert(records[i:i+BATCH])
-        if result:
-            success += BATCH
+    # Insérer les produits par batch et récupérer les IDs
+    print(f"  💾  Insertion produits...")
+    product_records = []
+    for i, row in enumerate(rows):
+        if row["barcode"] not in product_cache:
+            product_records.append({
+                "barcode": row["barcode"],
+                "name_he": row["name_he"],
+                "name_fr": names_fr[i],
+            })
 
-    total_imported += len(records)
-    print(f"  ✅  {len(records)} produits traités")
+    # Upsert produits par batch
+    for i in range(0, len(product_records), BATCH):
+        batch = product_records[i:i+BATCH]
+        result = supa_post("products", batch, upsert_on="barcode")
+        if result and isinstance(result, list):
+            for p in result:
+                if p.get("barcode"):
+                    product_cache[p["barcode"]] = p["id"]
 
-print(f"\n🎉  Import terminé: {total_imported} produits au total")
+    # Récupérer les IDs manquants
+    missing = [r["barcode"] for r in rows if r["barcode"] not in product_cache and r["barcode"]]
+    if missing:
+        for i in range(0, len(missing), 20):
+            batch_barcodes = missing[i:i+20]
+            in_clause = ",".join([f'"{b}"' for b in batch_barcodes])
+            results = supa_get("products", f"barcode=in.({in_clause})&select=id,barcode")
+            if results:
+                for p in results:
+                    product_cache[p["barcode"]] = p["id"]
+
+    # Insérer les prix
+    print(f"  💰  Insertion prix...")
+    price_records = []
+    for i, row in enumerate(rows):
+        product_id = product_cache.get(row["barcode"])
+        if not product_id:
+            continue
+        try:
+            price = float(str(row["price_raw"]).replace(",", "."))
+        except:
+            price = 0
+        price_records.append({
+            "product_id": product_id,
+            "chain_id": chain_id,
+            "store_id": row["store_id"],
+            "price": price,
+            "price_updated_at": datetime.now().isoformat(),
+            "imported_at": datetime.now().isoformat(),
+        })
+
+    for i in range(0, len(price_records), BATCH):
+        supa_post("prices", price_records[i:i+BATCH])
+
+    total_imported += len(price_records)
+    print(f"  ✅  {len(price_records)} prix importés")
+
+print(f"\n🎉  Import terminé: {total_imported} entrées au total")
