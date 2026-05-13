@@ -10,7 +10,7 @@ print("🚀  Import Shookoom démarré")
 print(f"🕐  {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
-SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY")
+SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY")
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 DATA_DIR = "./kaggle_data"
 
@@ -23,7 +23,7 @@ def supa_post(table, records, upsert_on=None):
         "Content-Type": "application/json",
     }
     if upsert_on:
-        headers["Prefer"] = f"resolution=merge-duplicates,return=representation"
+        headers["Prefer"] = "resolution=merge-duplicates,return=representation"
     else:
         headers["Prefer"] = "return=representation"
     data = json.dumps(records, ensure_ascii=False).encode("utf-8")
@@ -107,8 +107,6 @@ def translate_batch(texts):
 # ── 4. Traitement ─────────────────────────────────────────────────────────────
 total_imported = 0
 BATCH = 50
-
-# Cache produits déjà insérés (barcode → product_id)
 product_cache = {}
 
 for filepath in csv_files[:10]:
@@ -118,7 +116,6 @@ for filepath in csv_files[:10]:
 
     print(f"\n🏪  Traitement: {chain_name}")
 
-    # Lire le CSV
     rows = []
     try:
         with open(filepath, encoding="utf-8", errors="ignore") as f:
@@ -145,15 +142,13 @@ for filepath in csv_files[:10]:
     if not rows:
         continue
 
-    # Insérer la chaîne
-    chain_id = rows[0]["chain_id"] if rows else chain_name
+    chain_id = rows[0]["chain_id"]
     supa_post("chains", [{
         "id": chain_id,
         "name_fr": chain_name.replace("_", " ").title(),
         "name_he": chain_name
     }], upsert_on="id")
 
-    # Traduire les noms
     print(f"  🌐  Traduction...")
     names_he = [r["name_he"] for r in rows]
     names_fr = list(names_he)
@@ -164,7 +159,6 @@ for filepath in csv_files[:10]:
             names_fr[i+j] = translated[j] if j < len(translated) else batch[j]
         time.sleep(0.3)
 
-    # Insérer les produits par batch et récupérer les IDs
     print(f"  💾  Insertion produits...")
     product_records = []
     for i, row in enumerate(rows):
@@ -175,7 +169,6 @@ for filepath in csv_files[:10]:
                 "name_fr": names_fr[i],
             })
 
-    # Upsert produits par batch
     for i in range(0, len(product_records), BATCH):
         batch = product_records[i:i+BATCH]
         result = supa_post("products", batch, upsert_on="barcode")
@@ -184,7 +177,6 @@ for filepath in csv_files[:10]:
                 if p.get("barcode"):
                     product_cache[p["barcode"]] = p["id"]
 
-    # Récupérer les IDs manquants
     missing = [r["barcode"] for r in rows if r["barcode"] not in product_cache and r["barcode"]]
     if missing:
         for i in range(0, len(missing), 20):
@@ -195,7 +187,6 @@ for filepath in csv_files[:10]:
                 for p in results:
                     product_cache[p["barcode"]] = p["id"]
 
-    # Insérer les prix
     print(f"  💰  Insertion prix...")
     price_records = []
     for i, row in enumerate(rows):
