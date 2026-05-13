@@ -1,20 +1,16 @@
 """
 import_kaggle.py — Shookoom
-Import complet Kaggle → Supabase avec traduction Claude API
-Fichiers supportés : price_full_file_[chain].json / price_file_[chain].json
-
-Usage:
-  pip install -r requirements.txt
-  python import_kaggle.py --data-dir ./kaggle_data
+Import complet Kaggle → Supabase avec traduction OpenAI
 """
 
-import os, re, json, time, argparse, requests
+import os, re, json, time, requests
 from pathlib import Path
 from datetime import datetime
 
-SUPABASE_URL  = os.environ.get("NEXT_PUBLIC_SUPABASE_URL", "https://iwqaichmldpsutfujoco.supabase.co")
-SUPABASE_KEY  = os.environ.get("SUPABASE_SERVICE_KEY")
-ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY")
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://iwqaichmldpsutfujoco.supabase.co")
+SUPABASE_KEY = os.environ.get("SUPABASE_ANON_KEY")
+OPENAI_KEY   = os.environ.get("OPENAI_API_KEY")
+KAGGLE_TOKEN = os.environ.get("KAGGLE_API_TOKEN")
 
 HEADERS_SB = {
     "apikey": SUPABASE_KEY or "",
@@ -23,7 +19,6 @@ HEADERS_SB = {
     "Prefer": "resolution=merge-duplicates",
 }
 
-# 33 chaînes complètes
 CHAINS = {
     "rami_levy":                   ("Rami Levy",              "רמי לוי"),
     "shufersal":                   ("Shufersal",              "שופרסל"),
@@ -60,7 +55,6 @@ CHAINS = {
     "city_market_shops":           ("City Market",            "סיטי מרקט"),
 }
 
-# Catégorisation automatique par mots-clés hébreux
 CATEGORY_KEYWORDS = {
     1:  ["חלב", "גבינ", "יוגורט", "קוטג", "שמנת", "חמאה", "ביצ"],
     2:  ["עוף", "בשר", "פרג", "כבש", "הודו", "נקניק", "סלמי", "שניצל"],
@@ -69,7 +63,7 @@ CATEGORY_KEYWORDS = {
     5:  ["קפוא", "גלידה", "פיצ"],
     6:  ["מיץ", "מים", "קולה", "פפסי", "בירה", "יין", "אלכוהול", "קפה", "תה", "משקה"],
     7:  ["אורז", "פסטה", "שמן", "סוכר", "מלח", "רוטב", "שימור", "קמח", "דגן"],
-    8:  ["שמפו", "סבון", "קרם", "משחת שינ", "דאודור", "טיפוח", "קרן"],
+    8:  ["שמפו", "סבון", "קרם", "משחת שינ", "דאודור", "טיפוח"],
     9:  ["ניקוי", "סבון כלים", "אקונומיקה", "מגבון", "נייר טואלט"],
     10: ["טיטול", "מוצץ", "פורמולה", "דייסה"],
 }
@@ -82,7 +76,7 @@ def categorize(name_he):
     return 7
 
 def translate_batch(names_he):
-    if not names_he or not ANTHROPIC_KEY:
+    if not names_he or not OPENAI_KEY:
         return names_he
     prompt = (
         "Tu es un traducteur expert hébreu→français spécialisé en produits de supermarché israélien.\n"
@@ -94,12 +88,16 @@ def translate_batch(names_he):
     )
     try:
         r = requests.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-            json={"model": "claude-haiku-4-5-20251001", "max_tokens": 4096, "messages": [{"role": "user", "content": prompt}]},
+            "https://api.openai.com/v1/chat/completions",
+            headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
+            json={
+                "model": "gpt-4o-mini",
+                "max_tokens": 4096,
+                "messages": [{"role": "user", "content": prompt}]
+            },
             timeout=60,
         )
-        text = r.json()["content"][0]["text"].strip()
+        text = r.json()["choices"][0]["message"]["content"].strip()
         text = re.sub(r"^```json|^```|```$", "", text, flags=re.MULTILINE).strip()
         result = json.loads(text)
         return result if len(result) == len(names_he) else names_he
@@ -115,14 +113,20 @@ def sb_upsert(table, rows):
         print(f"  ⚠️  {table}: {r.status_code} {r.text[:150]}")
 
 def sb_get_translated_barcodes():
-    r = requests.get(f"{SUPABASE_URL}/rest/v1/products?select=barcode&translated_at=not.is.null&limit=200000", headers=HEADERS_SB)
+    r = requests.get(
+        f"{SUPABASE_URL}/rest/v1/products?select=barcode&translated_at=not.is.null&limit=200000",
+        headers=HEADERS_SB
+    )
     return {row["barcode"] for row in r.json()} if r.status_code == 200 else set()
 
 def sb_get_barcode_ids(barcodes):
     result = {}
     for i in range(0, len(barcodes), 500):
         chunk = barcodes[i:i+500]
-        r = requests.get(f"{SUPABASE_URL}/rest/v1/products?select=id,barcode&barcode=in.({','.join(chunk)})", headers=HEADERS_SB)
+        r = requests.get(
+            f"{SUPABASE_URL}/rest/v1/products?select=id,barcode&barcode=in.({','.join(chunk)})",
+            headers=HEADERS_SB
+        )
         if r.status_code == 200:
             for row in r.json():
                 result[row["barcode"]] = row["id"]
@@ -133,26 +137,40 @@ def load_json(path):
         raw = json.load(f)
     if isinstance(raw, list):
         return raw
-    # Structure Kaggle : {"rows": [...]} ou {"data": [...]}
     for key in ("rows", "data", "items", "products", "prices", "records"):
         if key in raw and isinstance(raw[key], list):
             return raw[key]
-    # Parfois la structure est {"root": {"events": [...]}}
     if "root" in raw and "events" in raw["root"]:
         return raw["root"]["events"]
     return []
+
+def download_kaggle(data_dir):
+    """Télécharge le dataset Kaggle via kagglehub"""
+    print("📥  Téléchargement des données Kaggle...")
+    try:
+        import kagglehub
+        path = kagglehub.dataset_download("sefi-erlich/israeli-supermarkets-data")
+        print(f"  ✅  Données téléchargées dans: {path}")
+        return Path(path)
+    except Exception as e:
+        print(f"  ❌  Échec kagglehub: {e}")
+        return None
 
 def import_chain(slug, name_fr, data_dir):
     print(f"\n{'─'*50}")
     print(f"  📦  {name_fr}  ({slug})")
 
-    # Cherche le fichier prix (full snapshot en priorité)
     candidates = [
         data_dir / f"price_full_file_{slug}.json",
         data_dir / f"{slug}_price_full_file.json",
         data_dir / f"price_file_{slug}.json",
         data_dir / f"{slug}_price_file.json",
     ]
+    # Cherche aussi dans les sous-dossiers
+    for subdir in data_dir.rglob("*.json"):
+        if slug in subdir.name and subdir not in candidates:
+            candidates.append(subdir)
+
     price_file = next((p for p in candidates if p.exists()), None)
     if not price_file:
         print(f"  ⚠️  Aucun fichier prix — ignoré")
@@ -204,7 +222,6 @@ def import_chain(slug, name_fr, data_dir):
 
     print(f"  🧹  {len(all_prices)} produits uniques | {len(products_new)} nouveaux à traduire")
 
-    # Traduction par batch de 50
     upsert_products = []
     BATCH = 50
     for i in range(0, len(products_new), BATCH):
@@ -224,7 +241,6 @@ def import_chain(slug, name_fr, data_dir):
     for i in range(0, len(upsert_products), 200):
         sb_upsert("products", upsert_products[i:i+200])
 
-    # Résolution barcode → ID
     bc_to_id = sb_get_barcode_ids(list({p["barcode"] for p in all_prices}))
 
     prices_rows = []
@@ -252,31 +268,23 @@ def ensure_chains():
     print(f"✅  {len(rows)} chaînes synchronisées dans Supabase")
 
 def main():
-    parser = argparse.ArgumentParser(description="Import Kaggle → Supabase pour Shookoom")
-    parser.add_argument("--data-dir", default="./kaggle_data")
-    parser.add_argument("--only", nargs="*", help="Chaînes spécifiques (ex: rami_levy shufersal)")
-    args = parser.parse_args()
-
-    data_dir = Path(args.data_dir)
-    if not data_dir.exists():
-        print(f"❌  Dossier introuvable: {data_dir}")
-        print("Télécharge depuis: https://www.kaggle.com/datasets/erlichsefi/israeli-supermarkets-2024")
-        return
     if not SUPABASE_KEY:
-        print("❌  SUPABASE_SERVICE_KEY manquante dans les variables d'environnement")
+        print("❌  SUPABASE_ANON_KEY manquante")
         return
 
     print("🚀  Import Shookoom démarré")
-    print(f"📁  {data_dir.resolve()}")
     print(f"🕐  {datetime.now().strftime('%Y-%m-%d %H:%M')}\n")
+
+    # Téléchargement Kaggle
+    data_dir = download_kaggle("./kaggle_data")
+    if not data_dir:
+        print("❌  Impossible de télécharger les données Kaggle")
+        return
 
     ensure_chains()
 
-    for slug in (args.only or list(CHAINS.keys())):
-        if slug in CHAINS:
-            import_chain(slug, CHAINS[slug][0], data_dir)
-        else:
-            print(f"⚠️  Chaîne inconnue: {slug}")
+    for slug, (name_fr, _) in CHAINS.items():
+        import_chain(slug, name_fr, data_dir)
 
     print(f"\n{'═'*50}")
     print("🎉  Import terminé !")
