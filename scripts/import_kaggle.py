@@ -1,6 +1,6 @@
 """
 import_kaggle.py — Shookoom
-Import CSV Kaggle → Supabase avec traduction OpenAI
+Import CSV Kaggle → Supabase (table product_prices)
 """
 import os, re, json, time, subprocess, sys, csv
 from datetime import datetime
@@ -28,7 +28,7 @@ if result.returncode != 0:
     sys.exit(1)
 print("✅  Téléchargé")
 
-# ── 2. Trouver les fichiers CSV de prix ───────────────────────────────────────
+# ── 2. Trouver les fichiers CSV ───────────────────────────────────────────────
 all_files = []
 for root, dirs, files in os.walk(DATA_DIR):
     for f in files:
@@ -38,7 +38,7 @@ csv_files = [f for f in all_files if f.endswith(".csv") and "price_full_file" in
 if not csv_files:
     csv_files = [f for f in all_files if f.endswith(".csv") and "price" in f]
 
-print(f"📂  {len(csv_files)} fichiers CSV de prix trouvés")
+print(f"📂  {len(csv_files)} fichiers CSV trouvés")
 
 # ── 3. Traduction OpenAI ──────────────────────────────────────────────────────
 import urllib.request
@@ -46,7 +46,9 @@ import urllib.request
 def translate_batch(texts):
     if not OPENAI_API_KEY:
         return texts
-    prompt = "Traduis ces noms de produits hébreux en français. Réponds UNIQUEMENT avec un JSON array des traductions dans le même ordre:\n" + json.dumps(texts, ensure_ascii=False)
+    # Nettoyer les textes
+    clean = [re.sub(r'[\x00-\x1f\x7f]', ' ', t).strip() for t in texts]
+    prompt = "Traduis ces noms de produits hébreux en français. Réponds UNIQUEMENT avec un JSON array des traductions dans le même ordre:\n" + json.dumps(clean, ensure_ascii=False)
     data = json.dumps({
         "model": "gpt-4o-mini",
         "messages": [{"role": "user", "content": prompt}],
@@ -72,9 +74,9 @@ def supabase_upsert(records):
     if not SUPABASE_URL or not SUPABASE_ANON_KEY:
         print("⚠️  Variables Supabase manquantes")
         return
-    data = json.dumps(records).encode()
+    data = json.dumps(records, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(
-        f"{SUPABASE_URL}/rest/v1/products",
+        f"{SUPABASE_URL}/rest/v1/product_prices",
         data=data,
         headers={
             "apikey": SUPABASE_ANON_KEY,
@@ -87,10 +89,13 @@ def supabase_upsert(records):
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             return r.status
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()[:200]
+        print(f"  ⚠️  Erreur Supabase {e.code}: {body}")
     except Exception as e:
         print(f"  ⚠️  Erreur Supabase: {e}")
 
-# ── 5. Traitement des fichiers CSV ────────────────────────────────────────────
+# ── 5. Traitement ─────────────────────────────────────────────────────────────
 total_imported = 0
 BATCH = 50
 
@@ -111,25 +116,15 @@ for filepath in csv_files[:10]:
                 if i >= 2000:
                     break
                 name_he = (
-                    row.get("itemname") or
-                    row.get("ItemName") or
-                    row.get("item_name") or
-                    row.get("name") or ""
+                    row.get("itemname") or row.get("ItemName") or ""
                 ).strip()
+                name_he = re.sub(r'[\x00-\x1f\x7f]', ' ', name_he).strip()
                 if not name_he:
                     continue
-                barcode = str(
-                    row.get("itemcode") or
-                    row.get("ItemCode") or
-                    row.get("item_code") or
-                    row.get("barcode") or ""
-                )
-                price_raw = (
-                    row.get("itemprice") or
-                    row.get("ItemPrice") or
-                    row.get("item_price") or
-                    row.get("price") or "0"
-                )
+                barcode = str(row.get("itemcode") or row.get("ItemCode") or "")
+                price_raw = row.get("itemprice") or row.get("ItemPrice") or "0"
+                store_id = str(row.get("storeid") or row.get("storeId") or "")
+                chain_id = str(row.get("chainid") or row.get("chainId") or "")
                 try:
                     price = float(str(price_raw).replace(",", "."))
                 except:
@@ -139,8 +134,10 @@ for filepath in csv_files[:10]:
                     "name_he": name_he,
                     "name_fr": "",
                     "price": price,
-                    "chain": chain,
-                    "updated_at": datetime.now().isoformat()
+                    "chain_id": chain_id,
+                    "chain_name": chain,
+                    "store_id": store_id,
+                    "price_updated_at": datetime.now().isoformat()
                 })
                 names_he.append(name_he)
     except Exception as e:
@@ -157,13 +154,16 @@ for filepath in csv_files[:10]:
         translated = translate_batch(batch_names)
         for j, rec in enumerate(records[i:i+BATCH]):
             rec["name_fr"] = translated[j] if j < len(translated) else rec["name_he"]
-        time.sleep(0.5)
+        time.sleep(0.3)
 
     print(f"  💾  Envoi dans Supabase...")
+    success = 0
     for i in range(0, len(records), BATCH):
-        supabase_upsert(records[i:i+BATCH])
+        result = supabase_upsert(records[i:i+BATCH])
+        if result:
+            success += BATCH
 
     total_imported += len(records)
-    print(f"  ✅  {len(records)} produits importés")
+    print(f"  ✅  {len(records)} produits traités")
 
 print(f"\n🎉  Import terminé: {total_imported} produits au total")
