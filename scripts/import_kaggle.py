@@ -19,7 +19,7 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 result = subprocess.run(
     ["kaggle", "datasets", "download",
-     "-d", "sefi-erlich/israeli-supermarkets-data",
+     "-d", "erlichsefi/israeli-supermarkets-2024",
      "--unzip", "-p", DATA_DIR],
     capture_output=True, text=True
 )
@@ -34,14 +34,20 @@ if result.returncode != 0:
 
 print(f"✅  Données téléchargées dans {DATA_DIR}")
 
-# ── 2. Lister les fichiers JSON ───────────────────────────────────────────────
+# ── 2. Lister les fichiers JSON de prix ───────────────────────────────────────
 json_files = []
 for root, dirs, files in os.walk(DATA_DIR):
     for f in files:
-        if f.endswith(".json"):
+        if f.endswith(".json") and "price_full_file" in f:
             json_files.append(os.path.join(root, f))
 
-print(f"📂  {len(json_files)} fichiers JSON trouvés")
+if not json_files:
+    for root, dirs, files in os.walk(DATA_DIR):
+        for f in files:
+            if f.endswith(".json") and "price" in f:
+                json_files.append(os.path.join(root, f))
+
+print(f"📂  {len(json_files)} fichiers de prix trouvés")
 
 # ── 3. Traduction OpenAI ──────────────────────────────────────────────────────
 import urllib.request
@@ -98,7 +104,7 @@ total_imported = 0
 BATCH = 50
 
 for filepath in json_files[:10]:
-    chain = os.path.basename(filepath).replace(".json","")
+    chain = os.path.basename(filepath).replace("price_full_file_","").replace("price_file_","").replace(".json","")
     print(f"\n🏪  Traitement: {chain}")
     try:
         with open(filepath, encoding="utf-8") as f:
@@ -111,22 +117,29 @@ for filepath in json_files[:10]:
     if isinstance(raw, list):
         items = raw
     elif isinstance(raw, dict):
-        for key in ["Products", "products", "items", "Prices"]:
+        for key in ["Products", "products", "items", "Prices", "root"]:
             if key in raw:
-                items = raw[key]
-                break
+                val = raw[key]
+                if isinstance(val, list):
+                    items = val
+                    break
         if not items:
-            items = list(raw.values())[0] if raw else []
+            for v in raw.values():
+                if isinstance(v, list) and len(v) > 0:
+                    items = v
+                    break
 
-    print(f"  📦  {len(items)} produits trouvés")
-    items = items[:5000]
+    print(f"  📦  {len(items)} entrées trouvées")
+    items = items[:2000]
 
     records = []
     names_he = []
     for item in items:
         if not isinstance(item, dict):
             continue
-        name_he = item.get("ItemName") or item.get("name") or item.get("Name") or ""
+        name_he = (item.get("ItemName") or item.get("name") or item.get("Name") or "").strip()
+        if not name_he:
+            continue
         barcode = str(item.get("ItemCode") or item.get("barcode") or item.get("Barcode") or "")
         price = item.get("ItemPrice") or item.get("price") or item.get("Price") or 0
         try:
@@ -142,6 +155,10 @@ for filepath in json_files[:10]:
             "updated_at": datetime.now().isoformat()
         })
         names_he.append(name_he)
+
+    if not records:
+        print(f"  ⚠️  Aucun produit extrait")
+        continue
 
     print(f"  🌐  Traduction de {len(records)} produits...")
     for i in range(0, len(records), BATCH):
