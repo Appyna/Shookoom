@@ -6,17 +6,16 @@ on:
 jobs:
   import:
     runs-on: ubuntu-latest
+    timeout-minutes: 350
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install wget
-        run: sudo apt-get install -y wget
       - name: Install dependencies
-        run: pip install il-supermarket-scraper openai supabase requests
+        run: pip install il-supermarket-scraper openai supabase python-dotenv
       - name: Import data to Supabase
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
