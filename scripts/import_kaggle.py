@@ -9,7 +9,7 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
-    handlers=[logging.FileHandler("/root/import4_out.log"), logging.StreamHandler()])
+    handlers=[logging.StreamHandler()])
 log = logging.getLogger()
 
 # Cache traduction persistant
