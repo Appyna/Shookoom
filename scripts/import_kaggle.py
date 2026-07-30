@@ -5,6 +5,9 @@ from supabase import create_client
 from openai import OpenAI
 
 load_dotenv()
+# Chaînes à scraper (depuis variable d'environnement ou toutes par défaut)
+CHAINS_FILTER = os.getenv("CHAINS_TO_SCRAPE", "").split(",")
+CHAINS_FILTER = [c.strip() for c in CHAINS_FILTER if c.strip()]
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -392,6 +395,8 @@ async def main():
     total_promos = 0
 
     for key, (module, cls, name_fr) in SCRAPERS.items():
+        if CHAINS_FILTER and key not in CHAINS_FILTER:
+            continue
         log.info(f"--- {key} ---")
         try:
             supabase.table("chains").upsert(
