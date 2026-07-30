@@ -1,13 +1,6 @@
-name: Import quotidien des prix Kamaz
-on:
-  schedule:
-    - cron: '0 3 * * *'
-  workflow_dispatch:
-
-jobs:
-  shufersal:
+bareket:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -18,12 +11,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "SHUFERSAL"
+          CHAINS_TO_SCRAPE: "BAREKET"
         run: python scripts/import_kaggle.py
 
-  yeinot_bitan:
+  shuk_ahir:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,12 +27,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "YEINOT_BITAN"
+          CHAINS_TO_SCRAPE: "SHUK_AHIR"
         run: python scripts/import_kaggle.py
 
-  rami_levy:
+  salach_dabach:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,12 +43,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "RAMI_LEVY"
+          CHAINS_TO_SCRAPE: "SALACH_DABACH"
         run: python scripts/import_kaggle.py
 
-  dor_alon_yellow:
+  hazi_hinam:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -66,12 +59,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "DOR_ALON,YELLOW"
+          CHAINS_TO_SCRAPE: "HAZI_HINAM"
         run: python scripts/import_kaggle.py
 
-  tiv_taam_yohananof_victory:
+  stop_market:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -82,12 +75,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "TIV_TAAM,YOHANANOF,VICTORY_NEW_SOURCE"
+          CHAINS_TO_SCRAPE: "STOP_MARKET"
         run: python scripts/import_kaggle.py
 
-  keshet:
+  super_yuda:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -98,12 +91,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "KESHET"
+          CHAINS_TO_SCRAPE: "SUPER_YUDA"
         run: python scripts/import_kaggle.py
 
-  osher_ad:
+  shefa_barcart:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -114,12 +107,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "OSHER_AD"
+          CHAINS_TO_SCRAPE: "SHEFA_BARCART_ASHEM"
         run: python scripts/import_kaggle.py
 
-  mahsani_ashuk:
+  polizer:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -130,12 +123,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "MAHSANI_ASHUK_NEW_SOURCE"
+          CHAINS_TO_SCRAPE: "POLIZER"
         run: python scripts/import_kaggle.py
 
-  zol_vebegadol:
+  fresh_market:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -146,12 +139,12 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "ZOL_VEBEGADOL"
+          CHAINS_TO_SCRAPE: "FRESH_MARKET_AND_SUPER_DOSH"
         run: python scripts/import_kaggle.py
 
-  king_store:
+  city_market:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -162,93 +155,13 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "KING_STORE"
-        run: python scripts/import_kaggle.py
-
-  super_sapir:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install il-supermarket-scraper supabase python-dotenv openai
-      - env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "SUPER_SAPIR"
-        run: python scripts/import_kaggle.py
-
-  netiv_hased:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install il-supermarket-scraper supabase python-dotenv openai
-      - env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "NETIV_HASED"
-        run: python scripts/import_kaggle.py
-
-  good_pharm:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install il-supermarket-scraper supabase python-dotenv openai
-      - env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "GOOD_PHARM"
-        run: python scripts/import_kaggle.py
-
-  maayan2000:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install il-supermarket-scraper supabase python-dotenv openai
-      - env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "MAAYAN2000"
-        run: python scripts/import_kaggle.py
-
-  reste:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - run: pip install il-supermarket-scraper supabase python-dotenv openai
-      - env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "BAREKET,SHUK_AHIR,SALACH_DABACH,HAZI_HINAM,STOP_MARKET,SUPER_YUDA,SHEFA_BARCART_ASHEM,POLIZER,FRESH_MARKET_AND_SUPER_DOSH,CITY_MARKET_SHOPS"
+          CHAINS_TO_SCRAPE: "CITY_MARKET_SHOPS"
         run: python scripts/import_kaggle.py
 
   images:
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    needs: [shufersal, yeinot_bitan, rami_levy, dor_alon_yellow, tiv_taam_yohananof_victory, keshet, osher_ad, mahsani_ashuk, zol_vebegadol, king_store, super_sapir, netiv_hased, good_pharm, maayan2000, reste]
+    needs: [shufersal, yeinot_bitan, rami_levy, dor_alon_yellow, tiv_taam_yohananof_victory, keshet, osher_ad, mahsani_ashuk, zol_vebegadol, king_store, super_sapir, netiv_hased, good_pharm, maayan2000, bareket, shuk_ahir, salach_dabach, hazi_hinam, stop_market, super_yuda, shefa_barcart, polizer, fresh_market, city_market]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
