@@ -1,0 +1,40 @@
+name: Test Traduction
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install openai supabase python-dotenv
+      - name: Test traduction
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python3 << 'EOF'
+          import os
+          from openai import OpenAI
+
+          client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+          
+          noms = ["חלב תנובה 3%", "לחם אחיד", "ביצים גדולות", "גבינה צהובה", "שמן זית"]
+          
+          prompt = "Traduis ces noms de produits hébreux en français:\n" + "\n".join(noms)
+          
+          r = client.chat.completions.create(
+              model="gpt-4o-mini",
+              messages=[{"role": "user", "content": prompt}],
+              max_tokens=200,
+          )
+          
+          print("✅ Traduction OK!")
+          print(r.choices[0].message.content)
+          EOF
