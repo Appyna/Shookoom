@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
 log = logging.getLogger()
 
 # Cache traduction persistant
-CACHE_FILE = '/root/translate_cache.json'
+CACHE_FILE = os.path.join(os.getenv("RUNNER_TEMP", "/tmp"), "translate_cache.json")
 try:
     with open(CACHE_FILE) as f:
         translate_cache = json.load(f)
