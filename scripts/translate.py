@@ -1,9 +1,4 @@
-"""
-translate.py — Traduit les produits non traduits via OpenAI
-Traduit UNIQUEMENT les produits où name_fr = name_he ou name_fr IS NULL
-Ne retraduit jamais ce qui est déjà traduit
-"""
-import os, json, time
+import os, time
 from supabase import create_client
 from openai import OpenAI
 
@@ -44,13 +39,16 @@ def main():
     print("🌍 Traduction démarrée")
 
     result = supabase.table("products")\
-        .select("id, barcode, name_he")\
-        .not_.is_("name_he", "null")\
-        .or_("name_fr.is.null,name_fr.eq.name_he")\
+        .select("id, barcode, name_he, name_fr")\
         .limit(MAX_PRODUCTS)\
         .execute()
 
-    products = [p for p in result.data if p.get("name_he") and (not p.get("name_fr") or p.get("name_fr") == p.get("name_he"))]
+    products = [
+        p for p in result.data
+        if p.get("name_he")
+        and p.get("name_he").strip()
+        and (not p.get("name_fr") or p.get("name_fr") == p.get("name_he"))
+    ]
 
     print(f"📦 {len(products)} produits à traduire")
 
@@ -66,11 +64,10 @@ def main():
 
         updates = []
         for p, name_fr in zip(batch, names_fr):
-            if name_fr != p["name_he"]:
+            if name_fr and name_fr.strip() and name_fr != p["name_he"]:
                 updates.append({
-                    "id": p["id"],
                     "barcode": p["barcode"],
-                    "name_fr": name_fr
+                    "name_fr": name_fr.strip()
                 })
 
         if updates:
