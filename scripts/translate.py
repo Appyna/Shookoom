@@ -62,19 +62,16 @@ def main():
         names_he = [p["name_he"] for p in batch]
         names_fr = translate_batch(names_he)
 
-        updates = []
         for p, name_fr in zip(batch, names_fr):
             if name_fr and name_fr.strip() and name_fr != p["name_he"]:
-                updates.append({
-                    "barcode": p["barcode"],
-                    "name_fr": name_fr.strip()
-                })
-
-        if updates:
-            supabase.table("products")\
-                .upsert(updates, on_conflict="barcode")\
-                .execute()
-            translated += len(updates)
+                try:
+                    supabase.table("products")\
+                        .update({"name_fr": name_fr.strip()})\
+                        .eq("id", p["id"])\
+                        .execute()
+                    translated += 1
+                except Exception as e:
+                    print(f"⚠️ Erreur update {p['barcode']}: {e}")
 
         print(f"✅ [{i+len(batch)}/{len(products)}] {translated} traduits")
         time.sleep(0.5)
