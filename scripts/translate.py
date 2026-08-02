@@ -10,16 +10,21 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 BATCH_SIZE = 50
-MAX_PRODUCTS = 5000
+MAX_PRODUCTS = 200000
 
 def translate_batch(names):
     if not openai_client:
         return names
     prompt = (
         "Tu es un expert en produits alimentaires et de pharmacie israeliens. "
-        "Traduis ces noms de produits en francais naturel et bien formule. "
-        "Garde les noms de marques tels quels (Tnuva, Osem, Elite, Strauss, Materna, etc). "
-        "1 ligne par produit, meme ordre, sans numerotation:\n" + "\n".join(names)
+        "Traduis ces noms de produits hebreux en francais naturel et bien formule. "
+        "Regles importantes:\n"
+        "- Garde les noms de marques tels quels (Tnuva, Osem, Elite, Strauss, Materna, Telma, Willi Food, etc)\n"
+        "- Garde les chiffres, pourcentages et unites tels quels (3%, 250g, 1L, etc)\n"
+        "- Si le nom est deja en francais ou anglais, garde-le tel quel\n"
+        "- Si le nom est un chiffre ou caractere unique, garde-le tel quel\n"
+        "- 1 ligne par produit, meme ordre exact, sans numerotation ni tiret\n"
+        "Noms a traduire:\n" + "\n".join(names)
     )
     try:
         r = openai_client.chat.completions.create(
@@ -28,8 +33,10 @@ def translate_batch(names):
             max_tokens=2000,
         )
         translations = r.choices[0].message.content.strip().split("\n")
+        translations = [t.strip().lstrip("- ").lstrip("0123456789. ") for t in translations if t.strip()]
         if len(translations) == len(names):
-            return [t.strip() for t in translations]
+            return translations
+        print(f"⚠️ Batch incomplet: {len(translations)} vs {len(names)} attendus - on garde l'hébreu")
         return names
     except Exception as e:
         print(f"⚠️ Erreur traduction: {e}")
@@ -57,6 +64,7 @@ def main():
         return
 
     translated = 0
+    errors = 0
     for i in range(0, len(products), BATCH_SIZE):
         batch = products[i:i+BATCH_SIZE]
         names_he = [p["name_he"] for p in batch]
@@ -71,12 +79,14 @@ def main():
                         .execute()
                     translated += 1
                 except Exception as e:
+                    errors += 1
                     print(f"⚠️ Erreur update {p['barcode']}: {e}")
 
-        print(f"✅ [{i+len(batch)}/{len(products)}] {translated} traduits")
+        if (i // BATCH_SIZE) % 10 == 0:
+            print(f"✅ [{i+len(batch)}/{len(products)}] {translated} traduits, {errors} erreurs")
         time.sleep(0.5)
 
-    print(f"🎉 Terminé: {translated} produits traduits")
+    print(f"🎉 Terminé: {translated} produits traduits, {errors} erreurs")
 
 if __name__ == "__main__":
     main()
