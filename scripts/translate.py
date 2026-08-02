@@ -10,7 +10,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 BATCH_SIZE = 50
-MAX_PRODUCTS = 200000
+PAGE_SIZE = 1000
 
 def translate_batch(names):
     if not openai_client:
@@ -36,28 +36,41 @@ def translate_batch(names):
         translations = [t.strip().lstrip("- ").lstrip("0123456789. ") for t in translations if t.strip()]
         if len(translations) == len(names):
             return translations
-        print(f"⚠️ Batch incomplet: {len(translations)} vs {len(names)} attendus - on garde l'hébreu")
+        print(f"⚠️ Batch incomplet: {len(translations)} vs {len(names)} - on garde l'hébreu")
         return names
     except Exception as e:
         print(f"⚠️ Erreur traduction: {e}")
         return names
 
+def fetch_all_untranslated():
+    all_products = []
+    offset = 0
+    while True:
+        result = supabase.table("products")\
+            .select("id, barcode, name_he, name_fr")\
+            .range(offset, offset + PAGE_SIZE - 1)\
+            .execute()
+        batch = result.data
+        if not batch:
+            break
+        filtered = [
+            p for p in batch
+            if p.get("name_he")
+            and p.get("name_he").strip()
+            and (not p.get("name_fr") or p.get("name_fr") == p.get("name_he"))
+        ]
+        all_products.extend(filtered)
+        print(f"  Chargé {offset + len(batch)} produits, {len(all_products)} à traduire...")
+        if len(batch) < PAGE_SIZE:
+            break
+        offset += PAGE_SIZE
+    return all_products
+
 def main():
-    print("🌍 Traduction démarrée")
+    print("🌍 Traduction démarrée - chargement de tous les produits...")
 
-    result = supabase.table("products")\
-        .select("id, barcode, name_he, name_fr")\
-        .limit(MAX_PRODUCTS)\
-        .execute()
-
-    products = [
-        p for p in result.data
-        if p.get("name_he")
-        and p.get("name_he").strip()
-        and (not p.get("name_fr") or p.get("name_fr") == p.get("name_he"))
-    ]
-
-    print(f"📦 {len(products)} produits à traduire")
+    products = fetch_all_untranslated()
+    print(f"📦 {len(products)} produits à traduire au total")
 
     if not products:
         print("✅ Tout est déjà traduit !")
