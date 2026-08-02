@@ -51,14 +51,17 @@ def main():
     page = 0
 
     while True:
-        # Charger une page de produits non traduits
+        # Charger une page
         result = supabase.table("products")\
             .select("id, barcode, name_he, name_fr")\
-            .eq("name_fr", supabase.table("products").select("name_he"))\
             .range(offset, offset + PAGE_SIZE - 1)\
             .execute()
 
-        # Filtre en Python
+        if not result.data:
+            print("✅ Plus de produits - terminé!")
+            break
+
+        # Filtrer les non traduits en Python
         page_products = [
             p for p in result.data
             if p.get("name_he")
@@ -66,14 +69,10 @@ def main():
             and (not p.get("name_fr") or p.get("name_fr") == p.get("name_he"))
         ]
 
-        if not result.data:
-            print(f"✅ Plus de produits à charger - terminé!")
-            break
-
         page += 1
-        print(f"📄 Page {page} — {len(page_products)} produits à traduire (offset {offset})")
+        print(f"📄 Page {page} (offset {offset}) — {len(page_products)}/{len(result.data)} à traduire")
 
-        # Traduire cette page par batches de 50
+        # Traduire par batches de 50
         for i in range(0, len(page_products), BATCH_SIZE):
             batch = page_products[i:i+BATCH_SIZE]
             if not batch:
@@ -99,7 +98,7 @@ def main():
         offset += PAGE_SIZE
 
         if len(result.data) < PAGE_SIZE:
-            print("✅ Dernière page atteinte!")
+            print("✅ Dernière page!")
             break
 
     print(f"🎉 Terminé: {translated} produits traduits, {errors} erreurs")
