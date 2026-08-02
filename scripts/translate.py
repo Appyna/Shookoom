@@ -42,62 +42,65 @@ def translate_batch(names):
         print(f"⚠️ Erreur traduction: {e}")
         return names
 
-def fetch_all_untranslated():
-    all_products = []
+def main():
+    print("🌍 Traduction démarrée - mode page par page")
+
+    translated = 0
+    errors = 0
     offset = 0
+    page = 0
+
     while True:
+        # Charger une page de produits non traduits
         result = supabase.table("products")\
             .select("id, barcode, name_he, name_fr")\
+            .eq("name_fr", supabase.table("products").select("name_he"))\
             .range(offset, offset + PAGE_SIZE - 1)\
             .execute()
-        batch = result.data
-        if not batch:
-            break
-        filtered = [
-            p for p in batch
+
+        # Filtre en Python
+        page_products = [
+            p for p in result.data
             if p.get("name_he")
             and p.get("name_he").strip()
             and (not p.get("name_fr") or p.get("name_fr") == p.get("name_he"))
         ]
-        all_products.extend(filtered)
-        print(f"  Chargé {offset + len(batch)} produits, {len(all_products)} à traduire...")
-        if len(batch) < PAGE_SIZE:
+
+        if not result.data:
+            print(f"✅ Plus de produits à charger - terminé!")
             break
+
+        page += 1
+        print(f"📄 Page {page} — {len(page_products)} produits à traduire (offset {offset})")
+
+        # Traduire cette page par batches de 50
+        for i in range(0, len(page_products), BATCH_SIZE):
+            batch = page_products[i:i+BATCH_SIZE]
+            if not batch:
+                continue
+            names_he = [p["name_he"] for p in batch]
+            names_fr = translate_batch(names_he)
+
+            for p, name_fr in zip(batch, names_fr):
+                if name_fr and name_fr.strip() and name_fr != p["name_he"]:
+                    try:
+                        supabase.table("products")\
+                            .update({"name_fr": name_fr.strip()})\
+                            .eq("id", p["id"])\
+                            .execute()
+                        translated += 1
+                    except Exception as e:
+                        errors += 1
+                        print(f"⚠️ Erreur {p['barcode']}: {e}")
+
+            time.sleep(0.3)
+
+        print(f"✅ Total: {translated} traduits, {errors} erreurs")
         offset += PAGE_SIZE
-    return all_products
 
-def main():
-    print("🌍 Traduction démarrée - chargement de tous les produits...")
-
-    products = fetch_all_untranslated()
-    print(f"📦 {len(products)} produits à traduire au total")
-
-    if not products:
-        print("✅ Tout est déjà traduit !")
-        return
-
-    translated = 0
-    errors = 0
-    for i in range(0, len(products), BATCH_SIZE):
-        batch = products[i:i+BATCH_SIZE]
-        names_he = [p["name_he"] for p in batch]
-        names_fr = translate_batch(names_he)
-
-        for p, name_fr in zip(batch, names_fr):
-            if name_fr and name_fr.strip() and name_fr != p["name_he"]:
-                try:
-                    supabase.table("products")\
-                        .update({"name_fr": name_fr.strip()})\
-                        .eq("id", p["id"])\
-                        .execute()
-                    translated += 1
-                except Exception as e:
-                    errors += 1
-                    print(f"⚠️ Erreur update {p['barcode']}: {e}")
-
-        if (i // BATCH_SIZE) % 10 == 0:
-            print(f"✅ [{i+len(batch)}/{len(products)}] {translated} traduits, {errors} erreurs")
-        time.sleep(0.5)
+        if len(result.data) < PAGE_SIZE:
+            print("✅ Dernière page atteinte!")
+            break
 
     print(f"🎉 Terminé: {translated} produits traduits, {errors} erreurs")
 
