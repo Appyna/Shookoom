@@ -11,18 +11,26 @@ deleted = 0
 batch = 0
 while True:
     batch += 1
+    # D'abord récupérer les IDs à supprimer
     result = supabase.table("promos")\
-        .delete()\
+        .select("id")\
         .lt("date_end", cutoff)\
         .not_.is_("date_end", "null")\
         .limit(500)\
         .execute()
     
-    count = len(result.data) if result.data else 0
-    deleted += count
-    print(f"Batch {batch}: supprimé {count} promos (total: {deleted})")
+    ids = [r["id"] for r in result.data] if result.data else []
     
-    if count < 500:
+    if not ids:
         break
+    
+    # Supprimer par IDs
+    supabase.table("promos")\
+        .delete()\
+        .in_("id", ids)\
+        .execute()
+    
+    deleted += len(ids)
+    print(f"Batch {batch}: supprimé {len(ids)} promos (total: {deleted})")
 
 print(f"✅ Terminé: {deleted} promos expirées supprimées")
