@@ -11,12 +11,11 @@ deleted = 0
 batch = 0
 while True:
     batch += 1
-    # D'abord récupérer les IDs à supprimer
     result = supabase.table("promos")\
         .select("id")\
         .lt("date_end", cutoff)\
         .not_.is_("date_end", "null")\
-        .limit(500)\
+        .limit(5000)\
         .execute()
     
     ids = [r["id"] for r in result.data] if result.data else []
@@ -24,7 +23,6 @@ while True:
     if not ids:
         break
     
-    # Supprimer par IDs
     supabase.table("promos")\
         .delete()\
         .in_("id", ids)\
