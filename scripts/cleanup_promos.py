@@ -1,13 +1,11 @@
 import os
 from supabase import create_client
-from datetime import date, timedelta
+from datetime import date
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 
-cutoff_date = date.today().isoformat()
-cutoff_scraped = (date.today() - timedelta(days=7)).isoformat()
-
-print(f"Suppression promos avec date_end < {cutoff_date} ET scraped_at < {cutoff_scraped}")
+cutoff = date.today().isoformat()
+print(f"Suppression de toutes les promos avec date_end < {cutoff}")
 
 deleted = 0
 batch = 0
@@ -15,8 +13,7 @@ while True:
     batch += 1
     result = supabase.table("promos")\
         .delete()\
-        .lt("date_end", cutoff_date)\
-        .lt("scraped_at", cutoff_scraped)\
+        .lt("date_end", cutoff)\
         .not_.is_("date_end", "null")\
         .limit(500)\
         .execute()
