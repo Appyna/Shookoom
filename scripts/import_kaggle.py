@@ -230,7 +230,7 @@ async def scrape_chain(key, module_path, class_name):
 
             if has_date:
                 is_today = today_str in f
-                is_full = "pricefull" in fname_lower or "promofull" in fname_lower
+                is_full = "pricefull" in fname_lower or "promofull" in fname_lower or fname_lower.startswith("promo")
                 if not is_today or not is_full:
                     os.remove(os.path.join(dump_dir, f))
                     removed += 1
