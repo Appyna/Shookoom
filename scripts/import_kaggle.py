@@ -354,9 +354,9 @@ def upsert_promos(items, chain_id, key):
     errors = 0
     for i in range(0, len(batch), 200):
         try:
-            supabase.table("promos").insert(
+            supabase.table("promos").upsert(
                 batch[i:i+200],
-                upsert=False
+                on_conflict="barcode,chain_id,store_id,promotion_id"
             ).execute()
         except Exception as e:
             errors += 1
