@@ -275,15 +275,14 @@ def upsert_products_and_prices(items, chain_id, key):
     deduped = list(seen.values())
 
     # Traduire noms uniques
-    unique_names = list({i["name"] for i in deduped})
-    translate_batch(unique_names)
+    # Traduction désactivée - gérée par translate.py
 
     prod_batch = []
     price_batch = []
     for item in deduped:
         barcode = item["code"]
         name_he = item["name"]
-        name_fr = translate_cache.get(name_he, name_he)
+        name_fr = name_he
         store_full_id = f"{chain_id}-{item['store_id']}"
 
         prod_batch.append({
