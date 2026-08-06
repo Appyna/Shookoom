@@ -424,6 +424,7 @@ jobs:
   cleanup_promos:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    if: always()
     needs: [traduction_promos]
     steps:
       - uses: actions/checkout@v4
