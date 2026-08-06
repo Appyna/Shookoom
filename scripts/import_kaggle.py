@@ -153,7 +153,10 @@ def parse_promo_xml(filepath, chain_id):
         store_id_xml = (root.findtext("StoreId") or "").strip()
         store_id_file = extract_store_id(os.path.basename(filepath))
         store_id = store_id_xml or store_id_file or "000"
-
+        promotions = list(root.iter("Promotion"))
+        log.info(f"DEBUG {os.path.basename(filepath)}: {len(promotions)} promotions trouvées")
+        if promotions:
+            log.info(f"DEBUG tags: {[child.tag for child in promotions[0]]}")
         for promo in root.iter("Promotion"):
             price_promo_str = (
                 promo.findtext("DiscountedPrice") or
