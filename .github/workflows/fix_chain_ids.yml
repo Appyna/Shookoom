@@ -1,0 +1,76 @@
+name: Fix Chain IDs
+on:
+  workflow_dispatch:
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install supabase python-dotenv
+      - name: Fix chain IDs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python3 << 'EOF'
+          import os
+          from supabase import create_client
+
+          supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
+
+          migrations = [
+              ('167a03ef-58bb-4ace-93a3-2796edcfe293', 'city_market'),
+              ('1f980cc8-d7d0-44af-aef3-dc266d07d70a', 'fresh_market'),
+              ('cf236529-7938-4bda-971a-66d85b699643', 'mahsani_ashuk'),
+              ('fcb21312-5ef4-465b-b70e-7df62f5e8d32', 'shefa_barcart'),
+              ('7567caaf-ee70-4ca0-9679-d94be241ca07', 'yayno_bitan'),
+              ('6eb6e754-db05-4802-8bd3-a96a94e389b6', 'victory'),
+          ]
+
+          for old_id, new_id in migrations:
+              print(f"Migration {old_id} → {new_id}")
+              
+              # Migrer prix par batch
+              migrated = 0
+              while True:
+                  result = supabase.table("prices")\
+                      .select("id")\
+                      .eq("chain_id", old_id)\
+                      .limit(1000)\
+                      .execute()
+                  ids = [r["id"] for r in result.data] if result.data else []
+                  if not ids:
+                      break
+                  supabase.table("prices")\
+                      .update({"chain_id": new_id})\
+                      .in_("id", ids)\
+                      .execute()
+                  migrated += len(ids)
+                  print(f"  Prix: {migrated} migrés")
+
+              # Migrer promos par batch
+              migrated = 0
+              while True:
+                  result = supabase.table("promos")\
+                      .select("id")\
+                      .eq("chain_id", old_id)\
+                      .limit(1000)\
+                      .execute()
+                  ids = [r["id"] for r in result.data] if result.data else []
+                  if not ids:
+                      break
+                  supabase.table("promos")\
+                      .update({"chain_id": new_id})\
+                      .in_("id", ids)\
+                      .execute()
+                  migrated += len(ids)
+                  print(f"  Promos: {migrated} migrés")
+
+              print(f"✅ {old_id} → {new_id} terminé")
+
+          print("🎉 Toutes les migrations terminées")
+          EOF
