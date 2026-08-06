@@ -153,11 +153,25 @@ def parse_promo_xml(filepath, chain_id):
         store_id_xml = (root.findtext("StoreId") or "").strip()
         store_id_file = extract_store_id(os.path.basename(filepath))
         store_id = store_id_xml or store_id_file or "000"
-        promotions = list(root.iter("Promotion"))
-        log.info(f"DEBUG {os.path.basename(filepath)}: {len(promotions)} promotions trouvées")
-        if promotions:
-            log.info(f"DEBUG tags: {[child.tag for child in promotions[0]]}")
+
         for promo in root.iter("Promotion"):
+            desc_he = (promo.findtext("PromotionDescription") or "").strip()
+            
+            # Dates — format standard ou Shufersal
+            date_start = (
+                promo.findtext("PromotionStartDate") or
+                (promo.findtext("PromotionStartDateTime") or "")[:10]
+            ).strip()[:10]
+            date_end = (
+                promo.findtext("PromotionEndDate") or
+                (promo.findtext("PromotionEndDateTime") or "")[:10]
+            ).strip()[:10]
+
+            # Ignorer les promos expirées
+            if date_end and date_end < date.today().isoformat():
+                continue
+
+            # Prix promo — format standard
             price_promo_str = (
                 promo.findtext("DiscountedPrice") or
                 promo.findtext("DiscountRate") or
@@ -168,32 +182,39 @@ def parse_promo_xml(filepath, chain_id):
             except:
                 price_promo = 0.0
 
-            # Filtrer les promos parasites (>=9999 = promo generique sans lien produit)
-            if price_promo <= 0 or price_promo >= 9999:
+            # Filtrer seulement les prix aberrants
+            if price_promo >= 9999:
                 continue
 
-            desc_he = (promo.findtext("PromotionDescription") or "").strip()
-            date_start = (promo.findtext("PromotionStartDate") or "").strip()[:10]
-            date_end = (promo.findtext("PromotionEndDate") or "").strip()[:10]
+            promotion_id = (promo.findtext("PromotionID") or "").strip()
+            club_id = (promo.findtext("ClubID") or "").strip()
+            is_coupon_str = (promo.findtext("AdditionalIsCoupon") or promo.findtext("IsCoupon") or "0").strip()
+            is_coupon = is_coupon_str in ("1", "true", "True")
 
+            # Chercher les produits — format standard (Item) ou Shufersal (Groups/Group/Item)
+            item_codes = []
             for item in promo.iter("Item"):
                 code = (item.findtext("ItemCode") or "").strip()
-                if not code:
-                    continue
-                try:
-                    price_normal = float((item.findtext("ItemPrice") or "0").strip())
-                except:
-                    price_normal = 0.0
+                if code:
+                    item_codes.append(code)
 
+            if not item_codes:
+                continue
+
+            for code in item_codes:
                 items.append({
                     "code": code,
                     "store_id": store_id,
                     "price_promo": price_promo,
-                    "price_normal": price_normal if price_normal > 0 else None,
+                    "price_normal": None,
                     "desc": desc_he,
                     "date_start": date_start or None,
                     "date_end": date_end or None,
+                    "promotion_id": promotion_id or None,
+                    "club_id": club_id or None,
+                    "is_coupon": is_coupon,
                 })
+
     except Exception as e:
         log.error(f"Erreur parse promo {filepath}: {e}")
     return items
