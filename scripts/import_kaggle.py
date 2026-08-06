@@ -247,7 +247,7 @@ async def scrape_chain(key, module_path, class_name):
         kept = 0
         removed = 0
         for f in os.listdir(dump_dir):
-            if not f.endswith(".xml"):
+            if f.endswith(".gz") or f.endswith(".zip"):
                 continue
             fname_lower = f.lower()
             has_date = bool(re.search(r'202\d{5}', f))
