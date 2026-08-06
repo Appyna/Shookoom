@@ -390,7 +390,8 @@ def upsert_promos(items, chain_id, key):
     return len(deduped)
 
 def import_chain(key, dump_dir, chain_id):
-    xml_files = [os.path.join(dump_dir, f) for f in os.listdir(dump_dir) if f.endswith(".xml")]
+    xml_files = [os.path.join(dump_dir, f) for f in os.listdir(dump_dir) 
+                 if f.endswith(".xml") or (not f.endswith(".gz") and not f.endswith(".zip") and "." not in f.split("_")[-1])]
     if not xml_files:
         log.warning(f"{key}: aucun fichier xml")
         return 0, 0
