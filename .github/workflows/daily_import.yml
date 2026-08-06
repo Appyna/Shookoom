@@ -82,7 +82,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "TIV_TAAM,YOHANANOF,VICTORY_NEW_SOURCE"
+          CHAINS_TO_SCRAPE: "TIV_TAAM,YOHANANOF,VICTORY"
         run: python scripts/import_kaggle.py
 
   keshet:
@@ -130,7 +130,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "MAHSANI_ASHUK_NEW_SOURCE"
+          CHAINS_TO_SCRAPE: "MAHSANI_ASHUK"
         run: python scripts/import_kaggle.py
 
   zol_vebegadol:
@@ -338,7 +338,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "SHEFA_BARCART_ASHEM"
+          CHAINS_TO_SCRAPE: "SHEFA_BARCART"
         run: python scripts/import_kaggle.py
 
   polizer:
@@ -370,7 +370,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "FRESH_MARKET_AND_SUPER_DOSH"
+          CHAINS_TO_SCRAPE: "FRESH_MARKET"
         run: python scripts/import_kaggle.py
 
   city_market:
@@ -386,7 +386,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHAINS_TO_SCRAPE: "CITY_MARKET_SHOPS"
+          CHAINS_TO_SCRAPE: "CITY_MARKET"
         run: python scripts/import_kaggle.py
 
   traduction:
