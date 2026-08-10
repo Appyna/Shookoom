@@ -4,46 +4,60 @@ from datetime import date
 
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 
-cutoff = date.today().isoformat()
-print(f"Suppression de toutes les promos avec date_end < {cutoff}")
-
-deleted = 0
-batch = 0
-errors = 0
-
-while True:
-    batch += 1
-    try:
+def main():
+    print("🧹 Nettoyage démarré")
+    
+    # Étape 1: Supprimer promos expirées
+    cutoff = date.today().isoformat()
+    deleted_expired = 0
+    while True:
         result = supabase.table("promos")\
             .select("id")\
             .lt("date_end", cutoff)\
             .not_.is_("date_end", "null")\
-            .limit(500)\
+            .limit(2000)\
             .execute()
-        
         ids = [r["id"] for r in result.data] if result.data else []
-        
         if not ids:
-            print("✅ Plus rien à supprimer!")
             break
-        
-        supabase.table("promos")\
-            .delete()\
-            .in_("id", ids)\
+        supabase.table("promos").delete().in_("id", ids).execute()
+        deleted_expired += len(ids)
+        print(f"Expirées supprimées: {deleted_expired}")
+
+    print(f"✅ Expirées: {deleted_expired} supprimées")
+
+    # Étape 2: Supprimer doublons - garder MIN(id) par groupe
+    deleted_dupes = 0
+    offset = 0
+    while True:
+        # Trouver les IDs à garder
+        result = supabase.table("promos")\
+            .select("id, barcode, chain_id, store_id, date_start")\
+            .range(offset, offset + 5000)\
             .execute()
         
-        deleted += len(ids)
-        if batch % 10 == 0:
-            print(f"Batch {batch}: total supprimé {deleted}")
-        
-        time.sleep(0.1)
-        
-    except Exception as e:
-        errors += 1
-        print(f"⚠️ Erreur batch {batch}: {e}")
-        time.sleep(2)
-        if errors > 10:
-            print("Trop d'erreurs, arrêt")
+        if not result.data:
             break
 
-print(f"✅ Terminé: {deleted} promos supprimées, {errors} erreurs")
+        seen = {}
+        to_delete = []
+        for row in result.data:
+            key = (row["barcode"], row["chain_id"], row["store_id"], row.get("date_start"))
+            if key in seen:
+                to_delete.append(row["id"])
+            else:
+                seen[key] = row["id"]
+
+        if to_delete:
+            supabase.table("promos").delete().in_("id", to_delete).execute()
+            deleted_dupes += len(to_delete)
+            print(f"Doublons supprimés: {deleted_dupes}")
+
+        offset += 5000
+        time.sleep(0.1)
+
+    print(f"✅ Doublons: {deleted_dupes} supprimés")
+    print(f"🎉 Terminé")
+
+if __name__ == "__main__":
+    main()
