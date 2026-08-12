@@ -51,25 +51,36 @@ def translate_batch(names):
 def main():
     print("🎯 Traduction promos démarrée - mode optimisé")
 
-    # Charger toutes les descriptions uniques non traduites
-    result = supabase.table("promos")\
-        .select("promo_description_he")\
-        .is_("promo_description_fr", "null")\
-        .not_.is_("promo_description_he", "null")\
-        .execute()
+    # Charger uniquement les descriptions uniques non traduites
+    # On pagine pour éviter de charger 1M lignes en mémoire
+    unique_descs = set()
+    offset = 0
+    while True:
+        result = supabase.table("promos")\
+            .select("promo_description_he")\
+            .is_("promo_description_fr", "null")\
+            .not_.is_("promo_description_he", "null")\
+            .range(offset, offset + 5000)\
+            .execute()
+        if not result.data:
+            break
+        for p in result.data:
+            if p.get("promo_description_he"):
+                unique_descs.add(p["promo_description_he"])
+        offset += 5000
+        if len(result.data) < 5000:
+            break
 
-    if not result.data:
+    unique_descs = list(unique_descs)
+    print(f"📦 {len(unique_descs)} descriptions uniques à traduire")
+
+    if not unique_descs:
         print("✅ Toutes les promos sont traduites!")
         return
-
-    # Dédupliquer
-    unique_descs = list(set(p["promo_description_he"] for p in result.data if p.get("promo_description_he")))
-    print(f"📦 {len(unique_descs)} descriptions uniques à traduire")
 
     # Traduire par batch de 50
     cache = {}
     translated = 0
-
     for i in range(0, len(unique_descs), BATCH_SIZE):
         batch = unique_descs[i:i+BATCH_SIZE]
         translations = translate_batch(batch)
@@ -83,7 +94,7 @@ def main():
 
     print(f"📝 Cache: {len(cache)} traductions — mise à jour Supabase...")
 
-    # Mettre à jour toutes les promos avec la traduction
+    # Mettre à jour toutes les promos
     updated = 0
     for desc_he, desc_fr in cache.items():
         try:
@@ -97,7 +108,7 @@ def main():
             print(f"⚠️ Erreur update: {e}")
         time.sleep(0.05)
 
-    print(f"🎉 Terminé: {updated} descriptions uniques traduites → appliquées à toutes les promos")
+    print(f"🎉 Terminé: {updated} descriptions traduites")
 
 if __name__ == "__main__":
     main()
