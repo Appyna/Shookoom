@@ -314,8 +314,6 @@ def upsert_products_and_prices(items, chain_id, key):
             "name_he": name_he,
             "name_fr": name_fr,
             "image_url": image_url(barcode),
-            "manufacturer": item.get("manufacturer") or None,
-            "country": item.get("country") or None,
             "unit_qty": item.get("unit_qty") or None,
             "unit_measure": item.get("unit_measure") or None,
         })
