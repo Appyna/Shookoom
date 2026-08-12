@@ -9,7 +9,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-BATCH_SIZE = 1
+BATCH_SIZE = 10
 PAGE_SIZE = 1000
 
 def translate_one(name):
