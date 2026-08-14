@@ -195,6 +195,8 @@ def parse_promo_xml(filepath, chain_id):
             item_codes = []
             for item in promo.iter("Item"):
                 code = (item.findtext("ItemCode") or "").strip()
+                if not code and len(item_codes) == 0:
+                    log.info(f"DEBUG Item tags: {[c.tag for c in item][:5]}, text={item.text}")
                 if code:
                     item_codes.append(code)
 
