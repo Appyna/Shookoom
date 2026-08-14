@@ -199,6 +199,7 @@ def parse_promo_xml(filepath, chain_id):
                     item_codes.append(code)
 
             if not item_codes:
+                log.info(f"DEBUG 0items: {[c.tag for c in promo][:8]}")
                 continue
 
             for code in item_codes:
