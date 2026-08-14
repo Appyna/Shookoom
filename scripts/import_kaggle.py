@@ -198,20 +198,26 @@ def parse_promo_xml(filepath, chain_id):
             item_codes = []
             for item in promo.iter("Item"):
                 code = (item.findtext("ItemCode") or "").strip()
-                if not code and len(item_codes) == 0:
-                    log.info(f"DEBUG Item tags: {[c.tag for c in item][:5]}, text={item.text}")
                 if code:
                     item_codes.append(code)
-
+            # Format 2: Groups/Group/PromotionItems/Item
             if not item_codes:
-                groups = promo.find("Groups")
-                if groups is not None:
-                    first_group = groups.find("Group")
-                    if first_group is not None:
-                        log.info(f"DEBUG Groups/Group children: {[c.tag for c in first_group][:5]}")
-                        first_item = first_group[0] if len(first_group) > 0 else None
-                        if first_item is not None:
-                            log.info(f"DEBUG first item children: {[c.tag for c in first_item]}")
+                for group in promo.iter("Group"):
+                    promo_items_el = group.find("PromotionItems")
+                    if promo_items_el is not None:
+                        for item in promo_items_el.iter("Item"):
+                            code = (item.findtext("ItemCode") or "").strip()
+                            if code:
+                                item_codes.append(code)
+            # Format 3: PromotionItems directs
+            if not item_codes:
+                promo_items_el = promo.find("PromotionItems")
+                if promo_items_el is not None:
+                    for item in promo_items_el.iter("Item"):
+                        code = (item.findtext("ItemCode") or "").strip()
+                        if code:
+                            item_codes.append(code)
+            if not item_codes:
                 continue
 
             for code in item_codes:
