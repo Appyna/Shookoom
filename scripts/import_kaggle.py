@@ -199,7 +199,14 @@ def parse_promo_xml(filepath, chain_id):
                     item_codes.append(code)
 
             if not item_codes:
-                log.info(f"DEBUG 0items: {[c.tag for c in promo][:8]}")
+                groups = promo.find("Groups")
+                if groups is not None:
+                    first_group = groups.find("Group")
+                    if first_group is not None:
+                        log.info(f"DEBUG Groups/Group children: {[c.tag for c in first_group][:5]}")
+                        first_item = first_group[0] if len(first_group) > 0 else None
+                        if first_item is not None:
+                            log.info(f"DEBUG first item children: {[c.tag for c in first_item]}")
                 continue
 
             for code in item_codes:
