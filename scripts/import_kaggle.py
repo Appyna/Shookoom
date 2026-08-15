@@ -196,27 +196,9 @@ def parse_promo_xml(filepath, chain_id):
             if len(items) == 0:
                 log.info(f"DEBUG XML: {ET2.tostring(promo, encoding='unicode')[:500]}")
             item_codes = []
-            for item in promo.iter("Item"):
-                code = (item.findtext("ItemCode") or "").strip()
-                if code:
-                    item_codes.append(code)
-            # Format 2: Groups/Group/PromotionItems/Item
-            if not item_codes:
-                for group in promo.iter("Group"):
-                    promo_items_el = group.find("PromotionItems")
-                    if promo_items_el is not None:
-                        for item in promo_items_el.iter("Item"):
-                            code = (item.findtext("ItemCode") or "").strip()
-                            if code:
-                                item_codes.append(code)
-            # Format 3: PromotionItems directs
-            if not item_codes:
-                promo_items_el = promo.find("PromotionItems")
-                if promo_items_el is not None:
-                    for item in promo_items_el.iter("Item"):
-                        code = (item.findtext("ItemCode") or "").strip()
-                        if code:
-                            item_codes.append(code)
+            for el in promo.iter():
+                if el.tag == "ItemCode" and el.text and el.text.strip():
+                    item_codes.append(el.text.strip())
             if not item_codes:
                 continue
 
