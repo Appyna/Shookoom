@@ -192,9 +192,6 @@ def parse_promo_xml(filepath, chain_id):
             is_coupon = is_coupon_str in ("1", "true", "True")
 
             # Chercher les produits — format standard (Item) ou Shufersal (Groups/Group/Item)
-            import xml.etree.ElementTree as ET2
-            if len(items) == 0:
-                log.info(f"DEBUG XML: {ET2.tostring(promo, encoding='unicode')[:500]}")
             item_codes = []
             for el in promo.iter():
                 if el.tag == "ItemCode" and el.text and el.text.strip():
