@@ -78,20 +78,20 @@ def main():
                 print(f"✅ [{i+len(batch)}/{len(unique_descs)}] traduits")
             time.sleep(0.3)
 
-        print(f"📝 {len(cache)} traductions — mise à jour Supabase...")
+        print(f"📝 {len(cache)} traductions — mise à jour Supabase via fonction SQL...")
 
-        updated = 0
-        for desc_he, desc_fr in cache.items():
-            try:
-                supabase.table("promos")\
-                    .update({"promo_description_fr": desc_fr})\
-                    .eq("promo_description_he", desc_he)\
-                    .is_("promo_description_fr", "null")\
-                    .execute()
-                updated += 1
-            except Exception as e:
-                print(f"⚠️ Erreur update: {e}")
-            time.sleep(0.01)
+        # Préparer les traductions en JSON
+        translations_json = [{"he": he, "fr": fr} for he, fr in cache.items()]
+        
+        # Appliquer en une seule requête SQL
+        try:
+            result = supabase.rpc('apply_promo_translations', 
+                {'translations': translations_json}).execute()
+            updated = result.data if result.data else 0
+            print(f"✅ {updated} descriptions mises à jour")
+        except Exception as e:
+            print(f"⚠️ Erreur: {e}")
+            updated = 0
 
         total_translated += updated
         print(f"✅ {updated} descriptions mises à jour (total: {total_translated})")
