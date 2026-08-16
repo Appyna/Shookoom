@@ -96,7 +96,7 @@ def main():
         total_translated += updated
         print(f"✅ {updated} descriptions mises à jour (total: {total_translated})")
 
-        if len(unique_descs) < 10000:
+        if len(unique_descs) < 1000:
             print("✅ Toutes les descriptions traduites!")
             break
 
