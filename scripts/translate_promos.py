@@ -91,7 +91,7 @@ def main():
                 updated += 1
             except Exception as e:
                 print(f"⚠️ Erreur update: {e}")
-            time.sleep(0.05)
+            time.sleep(0.01)
 
         total_translated += updated
         print(f"✅ {updated} descriptions mises à jour (total: {total_translated})")
