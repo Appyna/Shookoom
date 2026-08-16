@@ -29,6 +29,8 @@ def translate_batch(names):
         "  * מתנה = Cadeau offert\n"
         "  * פיצוי = Compensation\n"
         "  * ב-X ש\"ח = à X ₪\n"
+        "  * X יח' = X unités\n"
+        "  * קניית X = achat de X\n"
         "- 1 ligne par description, même ordre exact, sans numérotation\n"
         "Descriptions:\n" + "\n".join(names)
     )
@@ -49,66 +51,54 @@ def translate_batch(names):
         return names
 
 def main():
-    print("🎯 Traduction promos démarrée - mode optimisé")
+    print("🎯 Traduction promos démarrée")
 
-    # Charger uniquement les descriptions uniques non traduites
-    # On pagine pour éviter de charger 1M lignes en mémoire
-    unique_descs = set()
-    offset = 0
+    total_translated = 0
+
     while True:
-        result = supabase.table("promos")\
-            .select("promo_description_he")\
-            .is_("promo_description_fr", "null")\
-            .not_.is_("promo_description_he", "null")\
-            .range(offset, offset + 5000)\
-            .execute()
+        # Récupérer 10000 descriptions uniques non traduites via fonction SQL
+        result = supabase.rpc('get_untranslated_promo_descs').execute()
+
         if not result.data:
-            break
-        for p in result.data:
-            if p.get("promo_description_he"):
-                unique_descs.add(p["promo_description_he"])
-        offset += 5000
-        if len(result.data) < 5000:
+            print("✅ Toutes les promos sont traduites!")
             break
 
-    unique_descs = list(unique_descs)
-    print(f"📦 {len(unique_descs)} descriptions uniques à traduire")
+        unique_descs = [r["description_he"] for r in result.data if r.get("description_he")]
+        print(f"📦 {len(unique_descs)} descriptions à traduire ce run")
 
-    if not unique_descs:
-        print("✅ Toutes les promos sont traduites!")
-        return
+        if not unique_descs:
+            break
 
-    # Traduire par batch de 50
-    cache = {}
-    translated = 0
-    for i in range(0, len(unique_descs), BATCH_SIZE):
-        batch = unique_descs[i:i+BATCH_SIZE]
-        translations = translate_batch(batch)
-        for desc_he, desc_fr in zip(batch, translations):
-            if desc_fr and desc_fr != desc_he:
-                cache[desc_he] = desc_fr
-        translated += len(batch)
-        if (i // BATCH_SIZE) % 10 == 0:
-            print(f"✅ [{translated}/{len(unique_descs)}] descriptions traduites")
-        time.sleep(0.3)
+        # Traduire par batch de 50
+        cache = {}
+        for i in range(0, len(unique_descs), BATCH_SIZE):
+            batch = unique_descs[i:i+BATCH_SIZE]
+            translations = translate_batch(batch)
+            for desc_he, desc_fr in zip(batch, translations):
+                if desc_fr and desc_fr != desc_he:
+                    cache[desc_he] = desc_fr
+            if (i // BATCH_SIZE) % 20 == 0:
+                print(f"✅ [{i+len(batch)}/{len(unique_descs)}] traduits")
+            time.sleep(0.3)
 
-    print(f"📝 Cache: {len(cache)} traductions — mise à jour Supabase...")
+        print(f"📝 {len(cache)} traductions — mise à jour Supabase...")
 
-    # Mettre à jour toutes les promos
-    updated = 0
-    for desc_he, desc_fr in cache.items():
-        try:
-            supabase.table("promos")\
-                .update({"promo_description_fr": desc_fr})\
-                .eq("promo_description_he", desc_he)\
-                .is_("promo_description_fr", "null")\
-                .execute()
-            updated += 1
-        except Exception as e:
-            print(f"⚠️ Erreur update: {e}")
-        time.sleep(0.05)
+        # Mettre à jour Supabase
+        updated = 0
+        for desc_he, desc_fr in cache.items():
+            try:
+                supabase.table("promos")\
+                    .update({"promo_description_fr": desc_fr})\
+                    .eq("promo_description_he", desc_he)\
+                    .is_("promo_description_fr", "null")\
+                    .execute()
+                updated += 1
+            except Exception as e:
+                print(f"⚠️ Erreur update: {e}")
+            time.sleep(0.05)
 
-    print(f"🎉 Terminé: {updated} descriptions traduites")
+        total_translated += updated
+        print(f"✅ {updated} descriptions mises à jour (total: {total_translated})")
 
-if __name__ == "__main__":
-    main()
+        # Si moins de 10000 résultats, on a tout traduit
+        if len(unique_descs)
