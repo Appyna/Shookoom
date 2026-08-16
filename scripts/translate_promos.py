@@ -52,11 +52,9 @@ def translate_batch(names):
 
 def main():
     print("🎯 Traduction promos démarrée")
-
     total_translated = 0
 
     while True:
-        # Récupérer 10000 descriptions uniques non traduites via fonction SQL
         result = supabase.rpc('get_untranslated_promo_descs').execute()
 
         if not result.data:
@@ -69,7 +67,6 @@ def main():
         if not unique_descs:
             break
 
-        # Traduire par batch de 50
         cache = {}
         for i in range(0, len(unique_descs), BATCH_SIZE):
             batch = unique_descs[i:i+BATCH_SIZE]
@@ -83,7 +80,6 @@ def main():
 
         print(f"📝 {len(cache)} traductions — mise à jour Supabase...")
 
-        # Mettre à jour Supabase
         updated = 0
         for desc_he, desc_fr in cache.items():
             try:
@@ -100,5 +96,11 @@ def main():
         total_translated += updated
         print(f"✅ {updated} descriptions mises à jour (total: {total_translated})")
 
-        # Si moins de 10000 résultats, on a tout traduit
-        if len(unique_descs)
+        if len(unique_descs) < 10000:
+            print("✅ Toutes les descriptions traduites!")
+            break
+
+    print(f"🎉 Terminé: {total_translated} descriptions traduites au total")
+
+if __name__ == "__main__":
+    main()
