@@ -1,0 +1,51 @@
+name: Apply Promo Translations
+on:
+  workflow_dispatch:
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python3 << 'EOF'
+          import os, time
+          from supabase import create_client
+
+          supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
+
+          print("Application des traductions aux promos...")
+          
+          # Charger toutes les traductions
+          result = supabase.table("promo_translations")\
+              .select("description_he, description_fr")\
+              .not_.is_("description_fr", "null")\
+              .execute()
+          
+          translations = {r["description_he"]: r["description_fr"] for r in result.data}
+          print(f"📦 {len(translations)} traductions chargées")
+          
+          # Appliquer par batch via RPC
+          items = [{"he": he, "fr": fr} for he, fr in translations.items()]
+          
+          BATCH = 5000
+          applied = 0
+          for i in range(0, len(items), BATCH):
+              batch = items[i:i+BATCH]
+              try:
+                  supabase.rpc('apply_promo_translations', {'translations': batch}).execute()
+                  applied += len(batch)
+                  print(f"✅ {applied}/{len(items)} appliquées")
+              except Exception as e:
+                  print(f"⚠️ Erreur: {e}")
+              time.sleep(1)
+          
+          print(f"🎉 Terminé: {applied} traductions appliquées")
+          EOF
