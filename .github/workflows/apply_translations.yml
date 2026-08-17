@@ -23,14 +23,25 @@ jobs:
 
           print("Application des traductions aux promos...")
           
-          # Charger toutes les traductions
-          result = supabase.table("promo_translations")\
-              .select("description_he, description_fr")\
-              .not_.is_("description_fr", "null")\
-              .execute()
+          # Charger toutes les traductions avec pagination
+          translations = {}
+          offset = 0
+          while True:
+              result = supabase.table("promo_translations")\
+                  .select("description_he, description_fr")\
+                  .not_.is_("description_fr", "null")\
+                  .range(offset, offset + 999)\
+                  .execute()
+              if not result.data:
+                  break
+              for r in result.data:
+                  translations[r["description_he"]] = r["description_fr"]
+              print(f"  Chargé {len(translations)} traductions...")
+              if len(result.data) < 1000:
+                  break
+              offset += 1000
           
-          translations = {r["description_he"]: r["description_fr"] for r in result.data}
-          print(f"📦 {len(translations)} traductions chargées")
+          print(f"📦 {len(translations)} traductions chargées au total")
           
           # Appliquer par batch via RPC
           items = [{"he": he, "fr": fr} for he, fr in translations.items()]
