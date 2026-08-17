@@ -7,6 +7,7 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_
 def main():
     print("🧹 Nettoyage promos expirées démarré")
     
+    # Étape 1: Supprimer promos expirées
     cutoff = date.today().isoformat()
     deleted = 0
     batch = 0
@@ -34,7 +35,17 @@ def main():
         
         time.sleep(0.1)
     
-    print(f"🎉 Terminé: {deleted} promos expirées supprimées")
+    print(f"✅ Expirées: {deleted} supprimées")
+
+    # Étape 2: Insérer nouvelles descriptions dans promo_translations
+    print("📝 Synchronisation promo_translations...")
+    try:
+        result = supabase.rpc('sync_promo_translations').execute()
+        print(f"✅ {result.data} nouvelles descriptions ajoutées")
+    except Exception as e:
+        print(f"⚠️ Erreur sync: {e}")
+
+    print(f"🎉 Terminé")
 
 if __name__ == "__main__":
     main()
