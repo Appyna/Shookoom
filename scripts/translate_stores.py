@@ -9,10 +9,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
-# Villes invalides à ignorer
-INVALID_CITY_VALUES = {"לא קיים", "אין עיר", "INCONNU", "", "null", "None"}
+INVALID_CITY_VALUES = {"לא קיים", "אין עיר", "INCONNU", "", "null", "None", "לא קיים"}
 
-# Noms de chaînes officiels — intouchables
 CHAIN_NAMES_FR = {
     "shufersal": "Shufersal",
     "rami_levy": "Rami Levy",
@@ -44,26 +42,21 @@ def get_cities_cache():
     return {r["name_he"]: r["name_fr"] for r in result.data}
 
 def is_online_store(store):
-    """Détecte les magasins en ligne"""
     address = store.get("address") or ""
     name = store.get("store_name_he") or ""
     return "http" in address or "אינטרנט" in name or "אונליין" in name or "online" in name.lower()
 
-def clean_city_he(city_he, store_name_he):
-    """Nettoie city_he — retourne None si invalide"""
-    if not city_he:
-        return None
-    city_he = city_he.strip()
-    if city_he in INVALID_CITY_VALUES:
-        return None
-    # Si city_he ressemble au nom du magasin → invalide
-    if store_name_he and len(city_he) > 8 and city_he in (store_name_he or ""):
-        return None
-    # Supprimer "ה" en trop au début (article hébreu)
-    # On garde car certaines villes commencent vraiment par ה
-    return city_he
+def find_city_in_text(text, cities_cache):
+    """Méthode 2 — cherche une ville connue dans le texte"""
+    if not text:
+        return None, None
+    for city_he, city_fr in cities_cache.items():
+        if len(city_he) >= 3 and city_he in text:
+            return city_he, city_fr
+    return None, None
 
-def translate_batch(stores, cities_cache):
+def translate_name_and_address(stores, cities_cache):
+    """GPT uniquement pour traduire nom + adresse — PAS pour trouver la ville"""
     if not openai_client or not stores:
         return []
     
@@ -71,51 +64,32 @@ def translate_batch(stores, cities_cache):
     
     lines = []
     for s in stores:
-        chain_name = CHAIN_NAMES_FR.get(s.get("chain_id"), s.get("chain_id", ""))
+        chain_name = CHAIN_NAMES_FR.get(s.get("chain_id"), "")
+        city_fr = s.get("_city_fr", "Israël")
         lines.append(
             f"ID:{s['id']}|"
             f"CHAINE:{chain_name}|"
             f"NOM_HE:{s.get('store_name_he') or ''}|"
             f"ADRESSE:{s.get('address') or ''}|"
-            f"VILLE_HE:{s.get('city_he') or ''}"
+            f"VILLE_FR:{city_fr}"
         )
     
     prompt = (
-        "Tu es un expert en géographie israélienne.\n"
-        "Pour chaque magasin, retourne exactement: ID|nom_fr|ville_he|ville_fr|adresse_fr\n\n"
-        "=== RÈGLES CRITIQUES ===\n\n"
-        "RÈGLE 1 - NOMS DE CHAÎNES (JAMAIS traduire):\n"
-        f"{chain_names_list}\n"
-        "'Yellow' = TOUJOURS 'Yellow' (JAMAIS 'Jaune')\n"
-        "'Shufersal' = TOUJOURS 'Shufersal'\n\n"
-        "RÈGLE 2 - nom_fr:\n"
-        "Format: '[NOM_CHAINE] [description courte si utile] - [VILLE_FR]'\n"
+        "Tu es un expert en supermarchés israéliens.\n"
+        "Pour chaque magasin, retourne: ID|nom_fr|adresse_fr\n\n"
+        "RÈGLES CRITIQUES:\n"
+        f"1. Noms de chaînes INTOUCHABLES:\n{chain_names_list}\n"
+        "'Yellow' = TOUJOURS 'Yellow' (JAMAIS 'Jaune')\n\n"
+        "2. nom_fr: '[NOM_CHAINE] [description courte] - [VILLE_FR]'\n"
         "Exemples:\n"
         "- 'Shufersal Express - Tel Aviv'\n"
         "- 'Rami Levy - Jérusalem'\n"
         "- 'Yellow - Haïfa'\n"
-        "- 'Shufersal Deal - Beer Sheva'\n"
-        "JAMAIS mettre de texte hébreu dans nom_fr\n\n"
-        "RÈGLE 3 - ville_he:\n"
-        "Extraire UNIQUEMENT le nom de la ville en hébreu.\n"
-        "PAS le nom du magasin. PAS le nom de la rue. PAS le nom du quartier.\n"
-        "Villes valides: תל אביב, ירושלים, חיפה, באר שבע, נתניה, רחובות, etc.\n"
-        "Si VILLE_HE est déjà fournie et semble correcte → utilise-la.\n"
-        "Si pas de ville claire → laisse VIDE (ne mets pas 'לא קיים' ou 'INCONNU')\n\n"
-        "RÈGLE 4 - ville_fr:\n"
-        "Translittération française SANS apostrophe:\n"
-        "רעננה = Raanana (pas Ra'anana)\n"
-        "כוכב יעקב = Kochav Yaakov (pas Ya'akov)\n"
-        "מודיעין = Modiin (pas Modi'in)\n"
-        "Autres exemples: Tel Aviv, Jérusalem, Haïfa, Netanya, Beer Sheva,\n"
-        "Bnei Brak, Petah Tikva, Rishon LeZion, Ashdod, Ashkelon,\n"
-        "Raanana, Kfar Saba, Herzliya, Holon, Bat Yam, Rehovot\n"
-        "Si pas de ville → Israël\n\n"
-        "RÈGLE 5 - adresse_fr:\n"
-        "Traduis l'adresse en français. Garde les numéros.\n"
-        "Si pas d'adresse → laisse VIDE\n\n"
-        "RÈGLE 6 - JAMAIS de | dans les champs\n"
-        "RÈGLE 7 - 1 ligne par magasin, même ordre exact\n\n"
+        "JAMAIS de texte hébreu dans nom_fr\n"
+        "JAMAIS d'apostrophe dans les noms\n\n"
+        "3. adresse_fr: traduis l'adresse en français. Si vide: laisse vide\n\n"
+        "4. JAMAIS de | dans les champs\n"
+        "5. 1 ligne par magasin, même ordre exact\n\n"
         "Magasins:\n" + "\n".join(lines)
     )
     
@@ -130,6 +104,41 @@ def translate_batch(stores, cities_cache):
         print(f"⚠️ Erreur GPT: {e}")
         return []
 
+def extract_city_gpt(store, cities_cache):
+    """Méthode 3 — GPT pour extraire la ville uniquement"""
+    if not openai_client:
+        return None, None
+    
+    prompt = (
+        "Extrais UNIQUEMENT le nom de la ville israélienne depuis ces infos.\n"
+        "Réponds UNIQUEMENT avec: ville_he|ville_fr\n"
+        "Exemples: תל אביב|Tel Aviv, ירושלים|Jérusalem, חיפה|Haïfa\n"
+        "SANS apostrophe: רעננה|Raanana, מודיעין|Modiin\n"
+        "Si pas de ville claire: |Israël\n\n"
+        f"Nom du magasin: {store.get('store_name_he') or ''}\n"
+        f"Adresse: {store.get('address') or ''}"
+    )
+    
+    try:
+        r = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=50,
+        )
+        parts = r.choices[0].message.content.strip().split("|")
+        if len(parts) == 2:
+            ville_he = parts[0].strip()
+            ville_fr = parts[1].strip().replace("'", "").replace("`", "")
+            if ville_he in INVALID_CITY_VALUES or not ville_he:
+                return None, "Israël"
+            # Vérifier si dans cache
+            if ville_he in cities_cache:
+                return ville_he, cities_cache[ville_he]
+            return ville_he, ville_fr
+        return None, "Israël"
+    except:
+        return None, "Israël"
+
 def main():
     print("🏪 Traduction magasins démarrée")
     
@@ -143,7 +152,7 @@ def main():
         result = supabase.table("stores")\
             .select("id, chain_id, store_name_he, store_name_fr, city_he, city_fr, address, address_fr")\
             .is_("store_name_fr", "null")\
-            .limit(20)\
+            .limit(200)\
             .execute()
         
         stores = result.data
@@ -153,66 +162,79 @@ def main():
         
         print(f"📦 {len(stores)} magasins restants...")
         
+        # Étape 1+2 : Trouver la ville pour chaque magasin AVANT GPT
+        for store in stores:
+            if is_online_store(store):
+                store["_city_he"] = None
+                store["_city_fr"] = "En ligne"
+                continue
+            
+            city_he = None
+            city_fr = None
+            
+            # Méthode 1 — city_he déjà dans la base
+            existing_city_he = store.get("city_he")
+            if existing_city_he and existing_city_he not in INVALID_CITY_VALUES:
+                if existing_city_he in cities_cache:
+                    city_he = existing_city_he
+                    city_fr = cities_cache[existing_city_he]
+            
+            # Méthode 2 — chercher ville connue dans adresse ou nom
+            if not city_he:
+                city_he, city_fr = find_city_in_text(store.get("address"), cities_cache)
+            if not city_he:
+                city_he, city_fr = find_city_in_text(store.get("store_name_he"), cities_cache)
+            
+            # Méthode 3 — GPT en dernier recours
+            if not city_he:
+                city_he, city_fr = extract_city_gpt(store, cities_cache)
+                if city_he and city_he not in cities_cache:
+                    city_fr_clean = (city_fr or "Israël").replace("'", "").replace("`", "")
+                    new_cities[city_he] = city_fr_clean
+                    cities_cache[city_he] = city_fr_clean
+                    city_fr = city_fr_clean
+            
+            store["_city_he"] = city_he
+            store["_city_fr"] = city_fr or "Israël"
+        
+        # GPT pour noms + adresses par batch de 20
         BATCH = 20
         for i in range(0, len(stores), BATCH):
             batch = stores[i:i+BATCH]
-            translations = translate_batch(batch, cities_cache)
+            translations = translate_name_and_address(batch, cities_cache)
             
             for store, line in zip(batch, translations):
                 try:
                     parts = line.split("|")
-                    if len(parts) < 5:
+                    if len(parts) < 3:
                         continue
                     
-                    nom_fr = parts[1].strip()
-                    ville_he_raw = parts[2].strip()
-                    ville_fr_gpt = parts[3].strip()
-                    adresse_fr = parts[4].strip()
+                    nom_fr = parts[1].strip().replace("'", "").replace("`", "")
+                    adresse_fr = parts[2].strip()
                     
-                    # Détecter magasin en ligne
-                    if is_online_store(store):
-                        ville_fr = "En ligne"
-                        ville_he = None
-                    else:
-                        # Nettoyer ville_he
-                        ville_he = clean_city_he(ville_he_raw, store.get("store_name_he"))
-                        
-                        # Normaliser via cache
-                        if ville_he and ville_he in cities_cache:
-                            ville_fr = cities_cache[ville_he]
-                        elif ville_he:
-                            # Supprimer apostrophes
-                            ville_fr_clean = ville_fr_gpt.replace("'", "").replace("`", "")
-                            ville_fr = ville_fr_clean if ville_fr_clean else "Israël"
-                            new_cities[ville_he] = ville_fr
-                            cities_cache[ville_he] = ville_fr
-                        else:
-                            ville_fr = "Israël"
+                    city_he = store.get("_city_he")
+                    city_fr = store.get("_city_fr", "Israël")
                     
-                    # Nettoyer nom_fr
-                    # Supprimer apostrophes
-                    nom_fr = nom_fr.replace("'", "").replace("`", "")
-                    
-                    # Vérifier que le nom de chaîne n'est pas traduit
+                    # Vérifier nom de chaîne
                     chain_name = CHAIN_NAMES_FR.get(store.get("chain_id"), "")
                     if chain_name and not nom_fr.startswith(chain_name):
-                        nom_fr = f"{chain_name} - {ville_fr}" if ville_fr and ville_fr not in ("Israël", "En ligne") else chain_name
+                        nom_fr = f"{chain_name} - {city_fr}" if city_fr and city_fr not in ("Israël", "En ligne") else chain_name
                     
-                    # Si ville en hébreu dans nom_fr → remplacer par ville_fr
-                    if ville_he and ville_he in nom_fr:
-                        nom_fr = nom_fr.replace(ville_he, ville_fr)
+                    # Supprimer hébreu du nom_fr
+                    if city_he and city_he in nom_fr:
+                        nom_fr = nom_fr.replace(city_he, city_fr)
                     
-                    # Si nom_fr se termine par " - Israël" → enlever Israël
+                    # Nettoyer "- Israël" à la fin
                     if nom_fr.endswith(" - Israël"):
-                        nom_fr = nom_fr[:-9]
+                        nom_fr = nom_fr[:-9].strip()
                     
                     update_data = {}
                     if nom_fr:
                         update_data["store_name_fr"] = nom_fr
-                    if ville_he:
-                        update_data["city_he"] = ville_he
-                    if ville_fr:
-                        update_data["city_fr"] = ville_fr
+                    if city_he:
+                        update_data["city_he"] = city_he
+                    if city_fr:
+                        update_data["city_fr"] = city_fr
                     if adresse_fr:
                         update_data["address_fr"] = adresse_fr
                     
@@ -229,7 +251,7 @@ def main():
             print(f"✅ {total_updated} mis à jour")
             time.sleep(0.5)
     
-    # Sauvegarder nouvelles villes avec verified=FALSE
+    # Sauvegarder nouvelles villes
     if new_cities:
         print(f"🏙️ {len(new_cities)} nouvelles villes...")
         for he, fr in new_cities.items():
