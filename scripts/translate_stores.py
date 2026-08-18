@@ -78,7 +78,7 @@ def main():
         .select("id, chain_id, store_name_he, store_name_fr, city_he, city_fr, address, address_fr")\
         .execute()
     
-    stores = result.data[:10]  # TEST — supprimer après validation
+    stores = result.data
     print(f"📦 {len(stores)} magasins à traiter")
     
     updated = 0
