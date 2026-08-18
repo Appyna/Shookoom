@@ -12,7 +12,6 @@ openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 BATCH_SIZE = 50
 
 def is_valid_translation(original, translated):
-    """Vérifie que la traduction est valide"""
     if not translated or not translated.strip():
         return False
     if translated.strip() == original.strip():
@@ -22,7 +21,6 @@ def is_valid_translation(original, translated):
     return True
 
 def translate_one(name):
-    """Traduit une seule description — utilisé en fallback"""
     if not openai_client:
         return name
     prompt = (
@@ -73,32 +71,34 @@ def translate_batch(names):
         )
         translations = r.choices[0].message.content.strip().split("\n")
         translations = [t.strip() for t in translations if t.strip()]
-        
         if len(translations) == len(names):
-            # Protection A: vérifier chaque traduction
             result = []
             for orig, trans in zip(names, translations):
                 if is_valid_translation(orig, trans):
                     result.append(trans)
                 else:
-                    # Retenter 1 par 1
                     result.append(translate_one(orig))
             return result
         else:
-            # Protection C: batch incomplet → retenter 1 par 1
             print(f"⚠️ Batch incomplet: {len(translations)} vs {len(names)} — retente 1 par 1")
             return [translate_one(n) for n in names]
-            
     except Exception as e:
         print(f"⚠️ Erreur batch: {e}")
         return names
 
 def main():
     print("🎯 Traduction promos démarrée")
+
+    # Synchroniser les nouvelles descriptions d'abord
+    try:
+        result = supabase.rpc('sync_promo_translations').execute()
+        print(f"📥 {result.data} nouvelles descriptions synchronisées")
+    except Exception as e:
+        print(f"⚠️ Erreur sync: {e}")
+
     total_translated = 0
 
     while True:
-        # Récupérer 1000 descriptions non traduites depuis la petite table
         result = supabase.table("promo_translations")\
             .select("description_he")\
             .is_("description_fr", "null")\
@@ -115,7 +115,6 @@ def main():
         if not unique_descs:
             break
 
-        # Traduire par batch de 50
         cache = {}
         for i in range(0, len(unique_descs), BATCH_SIZE):
             batch = unique_descs[i:i+BATCH_SIZE]
@@ -129,7 +128,6 @@ def main():
 
         print(f"📝 {len(cache)} traductions valides — mise à jour...")
 
-        # Mettre à jour promo_translations
         for he, fr in cache.items():
             try:
                 supabase.table("promo_translations")\
@@ -139,7 +137,6 @@ def main():
             except Exception as e:
                 print(f"⚠️ Erreur update translation: {e}")
 
-        # Appliquer vers promos via fonction SQL
         translations_json = [{"he": he, "fr": fr} for he, fr in cache.items()]
         try:
             supabase.rpc('apply_promo_translations', 
