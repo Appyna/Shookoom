@@ -91,6 +91,7 @@ def main():
     result = supabase.table("stores")\
         .select("id, chain_id, store_name_he, address, city_he, city_fr, latitude, longitude")\
         .is_("latitude", "null")\
+        .limit(2000)\
         .execute()
     
     stores = result.data
