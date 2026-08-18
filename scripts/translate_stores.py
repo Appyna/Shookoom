@@ -71,7 +71,7 @@ def translate_batch(stores, cities_cache, chains_cache):
 def main():
     print("🏪 Traduction magasins démarrée")
     
-    # Charger les caches
+    # Charger les caches    
     cities_cache = get_cities_cache()
     chains_cache = get_chains_cache()
     print(f"📦 {len(cities_cache)} villes en cache, {len(chains_cache)} chaînes")
@@ -81,7 +81,7 @@ def main():
         .select("id, chain_id, store_name_he, store_name_fr, city_he, city_fr, address, address_fr")\
         .execute()
     
-    stores = result.data
+    stores = result.data[:5]  # TEST — supprimer après validation
     print(f"📦 {len(stores)} magasins à traiter")
     
     updated = 0
