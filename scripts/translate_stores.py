@@ -78,7 +78,7 @@ def main():
         .select("id, chain_id, store_name_he, store_name_fr, city_he, city_fr, address, address_fr")\
         .execute()
     
-    stores = result.data
+    stores = [s for s in result.data if not s.get("store_name_fr")]
     print(f"📦 {len(stores)} magasins à traiter")
     
     updated = 0
