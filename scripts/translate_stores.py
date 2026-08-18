@@ -21,7 +21,6 @@ def translate_batch(stores, cities_cache, chains_cache):
     if not openai_client or not stores:
         return []
     
-    # Liste des noms de chaînes officiels pour GPT
     chains_ref = "\n".join([f"- {name_fr}" for name_fr in chains_cache.values()])
     
     lines = []
@@ -71,17 +70,15 @@ def translate_batch(stores, cities_cache, chains_cache):
 def main():
     print("🏪 Traduction magasins démarrée")
     
-    # Charger les caches    
     cities_cache = get_cities_cache()
     chains_cache = get_chains_cache()
     print(f"📦 {len(cities_cache)} villes en cache, {len(chains_cache)} chaînes")
     
-    # Charger tous les magasins
     result = supabase.table("stores")\
         .select("id, chain_id, store_name_he, store_name_fr, city_he, city_fr, address, address_fr")\
         .execute()
     
-    stores = result.data[:5]  # TEST — supprimer après validation
+    stores = result.data[:10]  # TEST — supprimer après validation
     print(f"📦 {len(stores)} magasins à traiter")
     
     updated = 0
@@ -106,20 +103,21 @@ def main():
                 # Normaliser la ville
                 if ville_he and ville_he != "INCONNU":
                     if ville_he in cities_cache:
-                        # Ville connue → utiliser version normalisée
                         ville_fr = cities_cache[ville_he]
                     else:
-                        # Nouvelle ville → GPT a traduit, ajouter avec verified=FALSE
                         ville_fr = ville_fr_gpt
                         new_cities[ville_he] = ville_fr
                         cities_cache[ville_he] = ville_fr
                 else:
                     ville_fr = "Israël"
                     ville_he = None
+
+                # Si nom_fr = juste le nom de la chaîne → composer avec la ville
+                chain_name = chains_cache.get(store.get("chain_id"), "")
+                if nom_fr == chain_name and ville_fr and ville_fr != "Israël":
+                    nom_fr = f"{chain_name} - {ville_fr}"
                 
-                # Préparer la mise à jour
                 update_data = {}
-                
                 if nom_fr:
                     update_data["store_name_fr"] = nom_fr
                 if ville_he and not store.get("city_he"):
@@ -144,7 +142,6 @@ def main():
         
         time.sleep(0.5)
     
-    # Sauvegarder les nouvelles villes
     if new_cities:
         print(f"🏙️ {len(new_cities)} nouvelles villes à ajouter...")
         for he, fr in new_cities.items():
