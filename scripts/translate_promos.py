@@ -55,6 +55,7 @@ def translate_batch(names):
         "  * 1+1 = 1 acheté 1 offert\n"
         "  * 2+1 = 2 achetés 1 offert\n"
         "  * הנחה = Réduction\n"
+        "  * דיור מוגן = maison de retraite\n"
         "  * מתנה = Cadeau offert\n"
         "  * פיצוי = Compensation\n"
         "  * ב-X ש\"ח = à X ₪\n"
