@@ -21,6 +21,7 @@ def main():
     # Charger tous les magasins
     stores_result = supabase.table("stores")\
         .select("id, store_name_he, city_fr, city_he")\
+        .limit(2000)\
         .execute()
     
     stores = stores_result.data
