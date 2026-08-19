@@ -18,13 +18,21 @@ def main():
     cities = cities_result.data
     print(f"📦 {len(cities)} villes vérifiées")
     
-    # Charger tous les magasins
-    stores_result = supabase.table("stores")\
-        .select("id, store_name_he, city_fr, city_he")\
-        .limit(2000)\
-        .execute()
+    # Charger tous les magasins avec pagination
+    stores = []
+    offset = 0
+    while True:
+        result = supabase.table("stores")\
+            .select("id, store_name_he, city_fr, city_he")\
+            .range(offset, offset + 999)\
+            .execute()
+        if not result.data:
+            break
+        stores.extend(result.data)
+        if len(result.data) < 1000:
+            break
+        offset += 1000
     
-    stores = stores_result.data
     print(f"📦 {len(stores)} magasins à analyser")
     
     updated = 0
@@ -34,7 +42,6 @@ def main():
         if not name:
             continue
         
-        # Chercher une ville connue dans le nom
         found_city_he = None
         found_city_fr = None
         
@@ -46,7 +53,6 @@ def main():
                 break
         
         if found_city_he and found_city_fr:
-            # Mettre à jour uniquement si différent
             if store.get("city_fr") != found_city_fr or store.get("city_he") != found_city_he:
                 try:
                     supabase.table("stores")\
