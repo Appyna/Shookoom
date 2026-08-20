@@ -1,16 +1,16 @@
 import os, time
 from supabase import create_client
-from anthropic import Anthropic
+from openai import OpenAI
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-client = Anthropic(api_key=ANTHROPIC_API_KEY)
+openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 def translate_names(stores):
-    if not stores:
+    if not openai_client or not stores:
         return []
     
     lines = []
@@ -23,14 +23,13 @@ def translate_names(stores):
         "RÈGLES:\n"
         "- Translittère les mots hébreux en caractères latins\n"
         "- Garde les mots déjà en latin tels quels (AM-PM, BE, ONLINE, etc.)\n"
-        "- Traduis les mots communs: דיל=Deal, אקספרס=Express, שלי=Sheli, יש=Yesh, חסד=Hesed, מרקט=Market, סיטי=City, היפר=Hyper, סופר=Super, מגה=Mega, קניון=Canyon, מרכז=Centre\n"
-        "- Garde les noms de villes en français si possible\n"
+        "- Traduis les mots communs: דיל=Deal, אקספרס=Express, שלי=Sheli, יש=Yesh, חסד=Hesed, מרקט=Market, סיטי=City, היפר=Hyper, סופר=Super, קניון=Kanyon, מרכז=Centre, קרפור=Carrefour\n"
         "- Retourne: ID|nom_translittéré\n"
         "- 1 ligne par magasin, même ordre\n"
         "- JAMAIS de texte hébreu dans la réponse\n"
         "- JAMAIS d'apostrophe\n\n"
         "Exemples:\n"
-        "ID:100|שלי חיפה- כרמל → ID:100|Sheli Haïfa - Carmel\n"
+        "ID:100|שלי חיפה- כרמל → ID:100|Sheli Haifa - Carmel\n"
         "ID:101|דיל אשדוד- שבט לוי → ID:101|Deal Ashdod - Shevet Levi\n"
         "ID:102|יש חסד עפולה עילית → ID:102|Yesh Hesed Afula Ilit\n"
         "ID:103|AM-PM אלנבי → ID:103|AM-PM Allenby\n"
@@ -39,14 +38,14 @@ def translate_names(stores):
     )
     
     try:
-        r = client.messages.create(
-            model="claude-sonnet-4-6",
+        r = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}],
             max_tokens=3000,
-            messages=[{"role": "user", "content": prompt}]
         )
-        return r.content[0].text.strip().split("\n")
+        return r.choices[0].message.content.strip().split("\n")
     except Exception as e:
-        print(f"⚠️ Erreur Claude: {e}")
+        print(f"⚠️ Erreur GPT: {e}")
         return []
 
 def main():
