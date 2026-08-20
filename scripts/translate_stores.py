@@ -1,81 +1,52 @@
 import os, time
 from supabase import create_client
-from openai import OpenAI
+from anthropic import Anthropic
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
-
-CHAIN_NAMES_FR = {
-    "shufersal": "Shufersal",
-    "rami_levy": "Rami Levy",
-    "yayno_bitan": "Yeinot Bitan & Carrefour",
-    "keshet": "Keshet",
-    "good_pharm": "Good Pharm",
-    "super_sapir": "Super Sapir",
-    "zol_vebegadol": "Zol VeBegadol",
-    "dor_alon": "Dor Alon",
-    "stop_market": "Stop Market",
-    "super_yuda": "Super Yuda",
-    "salach_dabach": "Salach Dabach",
-    "bareket": "Bareket",
-    "city_market": "City Market",
-    "maayan2000": "Maayan 2000",
-    "king_store": "King Store",
-    "polizer": "Polizer",
-    "shefa_barcart": "Shefa Barcart",
-    "shuk_ahir": "Shuk Ahir",
-    "osher_ad": "Osher Ad",
-    "tiv_taam": "Tiv Taam",
-    "yohananof": "Yohananof",
-    "yellow": "Yellow",
-    "fresh_market": "Fresh Market",
-}
+client = Anthropic(api_key=ANTHROPIC_API_KEY)
 
 def translate_names(stores):
-    """GPT traduit uniquement le nom du magasin — la ville vient de Google Maps"""
-    if not openai_client or not stores:
+    if not stores:
         return []
-    
-    chain_names_list = "\n".join([f"- {v}" for v in CHAIN_NAMES_FR.values()])
     
     lines = []
     for s in stores:
-        chain_name = CHAIN_NAMES_FR.get(s.get("chain_id"), "")
-        city_fr = s.get("city_fr") or "Israël"
-        lines.append(f"ID:{s['id']}|CHAINE:{chain_name}|NOM_HE:{s.get('store_name_he') or ''}|VILLE:{city_fr}")
+        lines.append(f"ID:{s['id']}|{s.get('store_name_he') or ''}")
     
     prompt = (
-        "Tu es un expert en supermarchés israéliens.\n"
-        "Pour chaque magasin, retourne: ID|nom_fr\n\n"
-        "RÈGLES CRITIQUES:\n"
-        f"Noms de chaînes INTOUCHABLES (jamais traduire):\n{chain_names_list}\n\n"
-        "Format nom_fr: '[NOM_CHAINE] [type si utile] - [VILLE]'\n"
+        "Tu es un expert en translittération hébreu-français.\n"
+        "Pour chaque magasin israélien, translittère et traduis le nom hébreu en français.\n\n"
+        "RÈGLES:\n"
+        "- Translittère les mots hébreux en caractères latins\n"
+        "- Garde les mots déjà en latin tels quels (AM-PM, BE, ONLINE, etc.)\n"
+        "- Traduis les mots communs: דיל=Deal, אקספרס=Express, שלי=Sheli, יש=Yesh, חסד=Hesed, מרקט=Market, סיטי=City, היפר=Hyper, סופר=Super, מגה=Mega, קניון=Canyon, מרכז=Centre\n"
+        "- Garde les noms de villes en français si possible\n"
+        "- Retourne: ID|nom_translittéré\n"
+        "- 1 ligne par magasin, même ordre\n"
+        "- JAMAIS de texte hébreu dans la réponse\n"
+        "- JAMAIS d'apostrophe\n\n"
         "Exemples:\n"
-        "- 'Shufersal Express - Tel Aviv'\n"
-        "- 'Shufersal Deal - Jérusalem'\n"
-        "- 'Rami Levy - Netanya'\n"
-        "- 'Yellow - Haïfa'\n"
-        "- 'Good Pharm - Beer Sheva'\n\n"
-        "JAMAIS de texte hébreu dans nom_fr\n"
-        "JAMAIS d'apostrophe\n"
-        "1 ligne par magasin, même ordre exact\n"
-        "PAS de | dans les champs\n\n"
+        "ID:100|שלי חיפה- כרמל → ID:100|Sheli Haïfa - Carmel\n"
+        "ID:101|דיל אשדוד- שבט לוי → ID:101|Deal Ashdod - Shevet Levi\n"
+        "ID:102|יש חסד עפולה עילית → ID:102|Yesh Hesed Afula Ilit\n"
+        "ID:103|AM-PM אלנבי → ID:103|AM-PM Allenby\n"
+        "ID:104|קרפור מרקט נתניה → ID:104|Carrefour Market Netanya\n\n"
         "Magasins:\n" + "\n".join(lines)
     )
     
     try:
-        r = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}],
+        r = client.messages.create(
+            model="claude-sonnet-4-6",
             max_tokens=3000,
+            messages=[{"role": "user", "content": prompt}]
         )
-        return r.choices[0].message.content.strip().split("\n")
+        return r.content[0].text.strip().split("\n")
     except Exception as e:
-        print(f"⚠️ Erreur GPT: {e}")
+        print(f"⚠️ Erreur Claude: {e}")
         return []
 
 def main():
@@ -84,52 +55,52 @@ def main():
     total_updated = 0
     
     while True:
-        # Magasins avec city_fr mais sans store_name_fr
-        result = supabase.table("stores")\
-            .select("id, chain_id, store_name_he, store_name_fr, city_fr")\
-            .is_("store_name_fr", "null")\
-            .not_.is_("city_fr", "null")\
-            .limit(200)\
-            .execute()
+        stores = []
+        offset = 0
+        while True:
+            result = supabase.table("stores")\
+                .select("id, store_name_he, store_name_fr")\
+                .is_("store_name_fr", "null")\
+                .not_.is_("store_name_he", "null")\
+                .range(offset, offset + 999)\
+                .execute()
+            if not result.data:
+                break
+            stores.extend(result.data)
+            if len(result.data) < 1000:
+                break
+            offset += 1000
         
-        stores = result.data
         if not stores:
             print("✅ Tous les noms sont traduits!")
             break
         
-        print(f"📦 {len(stores)} magasins à nommer...")
+        print(f"📦 {len(stores)} magasins à traduire...")
         
-        BATCH = 20
+        BATCH = 30
         for i in range(0, len(stores), BATCH):
             batch = stores[i:i+BATCH]
             translations = translate_names(batch)
             
-            for store, line in zip(batch, translations):
+            for line in translations:
                 try:
                     parts = line.split("|")
                     if len(parts) < 2:
                         continue
-                    
+                    store_id = int(parts[0].replace("ID:", "").strip())
                     nom_fr = parts[1].strip().replace("'", "").replace("`", "")
-                    
-                    # Vérifier que le nom de chaîne est correct
-                    chain_name = CHAIN_NAMES_FR.get(store.get("chain_id"), "")
-                    if chain_name and not nom_fr.startswith(chain_name):
-                        city_fr = store.get("city_fr") or "Israël"
-                        nom_fr = f"{chain_name} - {city_fr}" if city_fr != "Israël" else chain_name
                     
                     if nom_fr:
                         supabase.table("stores")\
                             .update({"store_name_fr": nom_fr})\
-                            .eq("id", store["id"])\
+                            .eq("id", store_id)\
                             .execute()
                         total_updated += 1
-                        
                 except Exception as e:
-                    print(f"⚠️ Erreur {store.get('id')}: {e}")
+                    print(f"⚠️ Erreur: {e}")
             
             print(f"✅ {total_updated} noms traduits")
-            time.sleep(0.3)
+            time.sleep(0.5)
     
     print(f"🎉 Terminé: {total_updated} noms traduits")
 
