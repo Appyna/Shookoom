@@ -107,11 +107,20 @@ def main():
     verified_cities = {r["name_he"] for r in cities_result.data}
     
     # Charger tous les magasins
-    stores_result = supabase.table("stores")\
-        .select("id, store_name_he, address, city_fr, latitude, longitude")\
-        .execute()
-    
-    all_stores = stores_result.data
+    stores = []
+    offset = 0
+    while True:
+        result = supabase.table("stores")\
+            .select("id, store_name_he, address, city_fr, latitude, longitude")\
+            .range(offset, offset + 999)\
+            .execute()
+        if not result.data:
+            break
+        stores.extend(result.data)
+        if len(result.data) < 1000:
+            break
+        offset += 1000
+    all_stores = stores
     
     # Filtrer uniquement les 864 sans ville dans le nom
     stores_to_process = []
