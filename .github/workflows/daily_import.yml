@@ -360,6 +360,7 @@ jobs:
   traduction:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    if: always()
     needs: [shufersal, yeinot_bitan, rami_levy, dor_alon_yellow, tiv_taam_yohananof_victory, keshet, osher_ad, zol_vebegadol, king_store, super_sapir, netiv_hased, good_pharm, maayan2000, bareket, shuk_ahir, salach_dabach, stop_market, super_yuda, shefa_barcart, polizer, fresh_market, city_market]
     steps:
       - uses: actions/checkout@v4
@@ -376,6 +377,7 @@ jobs:
   traduction_promos:
     runs-on: ubuntu-latest
     timeout-minutes: 180
+    if: always()
     needs: [traduction]
     steps:
       - uses: actions/checkout@v4
@@ -405,6 +407,30 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: |
           python scripts/cleanup_promos.py
+          python3 -c "
+          import os
+          from supabase import create_client
+          supabase = create_client(os.getenv('SUPABASE_URL'), os.getenv('SUPABASE_SERVICE_KEY'))
+          result = supabase.rpc('apply_translations_batch').execute()
+          print(f'✅ {result.data} traductions appliquées')
+          "
+  traduction_promos_final:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: always()
+    needs: [cleanup_promos]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install openai supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python scripts/translate_promos.py
           python3 -c "
           import os
           from supabase import create_client
