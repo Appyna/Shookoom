@@ -87,7 +87,7 @@ jobs:
 
   keshet:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -103,7 +103,7 @@ jobs:
 
   osher_ad:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -119,7 +119,7 @@ jobs:
 
   zol_vebegadol:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -135,7 +135,7 @@ jobs:
 
   king_store:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -151,7 +151,7 @@ jobs:
 
   super_sapir:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -167,7 +167,7 @@ jobs:
 
   netiv_hased:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -183,7 +183,7 @@ jobs:
 
   good_pharm:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -199,7 +199,7 @@ jobs:
 
   maayan2000:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -215,7 +215,7 @@ jobs:
 
   bareket:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -231,7 +231,7 @@ jobs:
 
   shuk_ahir:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -247,7 +247,7 @@ jobs:
 
   salach_dabach:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -263,7 +263,7 @@ jobs:
 
   stop_market:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -279,7 +279,7 @@ jobs:
 
   super_yuda:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -295,7 +295,7 @@ jobs:
 
   shefa_barcart:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -311,7 +311,7 @@ jobs:
 
   polizer:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -327,7 +327,7 @@ jobs:
 
   fresh_market:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -343,7 +343,7 @@ jobs:
 
   city_market:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -359,7 +359,7 @@ jobs:
 
   traduction:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     needs: [shufersal, yeinot_bitan, rami_levy, dor_alon_yellow, tiv_taam_yohananof_victory, keshet, osher_ad, zol_vebegadol, king_store, super_sapir, netiv_hased, good_pharm, maayan2000, bareket, shuk_ahir, salach_dabach, stop_market, super_yuda, shefa_barcart, polizer, fresh_market, city_market]
     steps:
       - uses: actions/checkout@v4
@@ -375,7 +375,7 @@ jobs:
 
   traduction_promos:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     needs: [traduction]
     steps:
       - uses: actions/checkout@v4
@@ -391,7 +391,7 @@ jobs:
 
   cleanup_promos:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 180
     if: always()
     needs: [traduction_promos]
     steps:
