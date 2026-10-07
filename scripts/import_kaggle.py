@@ -218,7 +218,7 @@ def parse_promo_xml(filepath, chain_id):
     return items
 
 async def scrape_chain(key, module_path, class_name):
-    from il_supermarket_scarper.utils.file_output import DiskFileOutput
+    from il_supermarket_scarper.utils import DiskFileOutput
 
     dump_dir = f"/tmp/scrape4_{key}"
     os.makedirs(dump_dir, exist_ok=True)
