@@ -1,0 +1,456 @@
+name: Import quotidien des prix Kamaz v2
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  shufersal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SHUFERSAL"
+        run: python scripts/import_kaggle_v2.py
+
+  yeinot_bitan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "YEINOT_BITAN"
+        run: python scripts/import_kaggle_v2.py
+
+  rami_levy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "RAMI_LEVY"
+        run: python scripts/import_kaggle_v2.py
+
+  dor_alon_yellow:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "DOR_ALON,YELLOW"
+        run: python scripts/import_kaggle_v2.py
+
+  tiv_taam_yohananof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "TIV_TAAM,YOHANANOF"
+        run: python scripts/import_kaggle_v2.py
+
+  keshet:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "KESHET"
+        run: python scripts/import_kaggle_v2.py
+
+  osher_ad:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "OSHER_AD"
+        run: python scripts/import_kaggle_v2.py
+
+  zol_vebegadol:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "ZOL_VEBEGADOL"
+        run: python scripts/import_kaggle_v2.py
+
+  king_store:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "KING_STORE"
+        run: python scripts/import_kaggle_v2.py
+
+  super_sapir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SUPER_SAPIR"
+        run: python scripts/import_kaggle_v2.py
+
+  netiv_hased:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "NETIV_HASED"
+        run: python scripts/import_kaggle_v2.py
+
+  good_pharm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "GOOD_PHARM"
+        run: python scripts/import_kaggle_v2.py
+
+  maayan2000:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "MAAYAN2000"
+        run: python scripts/import_kaggle_v2.py
+
+  bareket:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "BAREKET"
+        run: python scripts/import_kaggle_v2.py
+
+  shuk_ahir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SHUK_AHIR"
+        run: python scripts/import_kaggle_v2.py
+
+  salach_dabach:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SALACH_DABACH"
+        run: python scripts/import_kaggle_v2.py
+
+  stop_market:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "STOP_MARKET"
+        run: python scripts/import_kaggle_v2.py
+
+  super_yuda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SUPER_YUDA"
+        run: python scripts/import_kaggle_v2.py
+
+  shefa_barcart:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SHEFA_BARCART"
+        run: python scripts/import_kaggle_v2.py
+
+  polizer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "POLIZER"
+        run: python scripts/import_kaggle_v2.py
+
+  fresh_market:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "FRESH_MARKET"
+        run: python scripts/import_kaggle_v2.py
+
+  city_market:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "CITY_MARKET"
+        run: python scripts/import_kaggle_v2.py
+
+  hazi_hinam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "HAZI_HINAM"
+        run: python scripts/import_kaggle_v2.py
+
+  super_pharm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SUPER_PHARM"
+        run: python scripts/import_kaggle_v2.py
+
+  mahsani_ashuk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "MAHSANI_ASHUK"
+        run: python scripts/import_kaggle_v2.py
+
+  het_cohen:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "HET_COHEN"
+        run: python scripts/import_kaggle_v2.py
+
+  meshnat_yosef:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "MESHNAT_YOSEF"
+        run: python scripts/import_kaggle_v2.py
+
+  cofix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "COFIX"
+        run: python scripts/import_kaggle_v2.py
+
+  victory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "VICTORY"
+        run: python scripts/import_kaggle_v2.py
+
+  super_yuda_meshnat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install il-supermarket-scraper==1.0.15 supabase python-dotenv
+      - env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          CHAINS_TO_SCRAPE: "SHUK_AHIR,MESHNAT_YOSEF"
+        run: python scripts/import_kaggle_v2.py
