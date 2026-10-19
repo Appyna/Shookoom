@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAMAZ – השוואת מחירים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&family=Frank+Ruhl+Libre:wght@400;700&display=swap">
+<style>
+:root{--bg:#F5F0E8;--bg-card:#FDFAF4;--bg-input:#FFFFFF;--fg:#2A1A0E;--fg-muted:#7A5C44;--border:#DDD0BC;--accent:#C0533A;--accent-dim:#E8D5CC;--accent-text:#FDFAF4;--best:#2D7A4F;--promo:#8B5E3C;--promo-bg:#F5E9DC;--shadow:0 2px 12px rgba(42,26,14,.08);--radius:14px;--font-he:'Heebo','Arial Hebrew',sans-serif;--font-serif:'Frank Ruhl Libre','David',serif}
+@media(prefers-color-scheme:dark){:root{--bg:#1A120A;--bg-card:#241810;--bg-input:#2E1F14;--fg:#F0E8DC;--fg-muted:#A88870;--border:#3D2A1C;--accent:#D4694E;--accent-dim:#3D2218;--accent-text:#F5EDE8;--best:#4CAF78;--promo:#D4A574;--promo-bg:#2A1A08;--shadow:0 2px 12px rgba(0,0,0,.3)}}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:var(--font-he);background:var(--bg);color:var(--fg);direction:rtl;min-height:100%}
+body{padding:0 16px 32px}
+.header{position:sticky;top:0;z-index:100;background:var(--bg);border-bottom:1px solid var(--border);padding-block:14px;display:flex;align-items:center;gap:16px;margin:0 -16px;padding-left:20px;padding-right:20px}
+.logo{font-family:var(--font-serif);font-size:1.6rem;font-weight:700;color:var(--accent);letter-spacing:-.02em;flex-shrink:0;line-height:1}
+.logo span{color:var(--fg-muted);font-size:.8em;font-weight:400}
+.search-wrap{flex:1;position:relative}
+.search-input{width:100%;padding:10px 16px 10px 44px;border:1.5px solid var(--border);border-radius:50px;background:var(--bg-input);color:var(--fg);font-family:var(--font-he);font-size:.95rem;outline:none;transition:border-color .15s;direction:rtl}
+.search-input:focus{border-color:var(--accent)}
+.search-input::placeholder{color:var(--fg-muted)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--fg-muted);pointer-events:none;font-size:1.1rem}
+.filters-bar{display:flex;gap:8px;overflow-x:auto;padding-block:14px;scrollbar-width:none;flex-direction:row-reverse}
+.filters-bar::-webkit-scrollbar{display:none}
+.filter-chip{flex-shrink:0;padding:6px 14px;border-radius:50px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-family:var(--font-he);font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .15s;font-weight:500}
+.filter-chip:hover{border-color:var(--accent);color:var(--accent)}
+.filter-chip.active{background:var(--accent);border-color:var(--accent);color:var(--accent-text)}
+.city-select{flex-shrink:0;padding:6px 14px 6px 28px;border-radius:50px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--fg-muted);font-family:var(--font-he);font-size:.82rem;cursor:pointer;font-weight:500;direction:rtl;outline:none;transition:all .15s;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237A5C44' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 10px center}
+.city-select.active{border-color:var(--accent);color:var(--accent)}
+.stats-row{display:flex;gap:8px;align-items:center;padding-bottom:12px;color:var(--fg-muted);font-size:.82rem;flex-direction:row-reverse}
+.stats-row strong{color:var(--fg)}
+.results{display:flex;flex-direction:column;gap:16px}
+.product-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:box-shadow .15s}
+.product-card:hover{box-shadow:0 4px 24px rgba(42,26,14,.13)}
+.card-header{display:flex;gap:14px;padding:16px;align-items:flex-start;direction:rtl}
+.product-img{width:76px;height:76px;object-fit:contain;border-radius:8px;background:var(--bg);flex-shrink:0;border:1px solid var(--border)}
+.product-img-placeholder{width:76px;height:76px;border-radius:8px;background:var(--accent-dim);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--accent)}
+.product-info{flex:1;min-width:0}
+.product-name{font-size:1rem;font-weight:600;color:var(--fg);line-height:1.35;margin-bottom:4px}
+.product-meta{font-size:.78rem;color:var(--fg-muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap;direction:rtl}
+.dept-tag{background:var(--accent-dim);color:var(--accent);padding:2px 8px;border-radius:50px;font-size:.72rem;font-weight:600}
+.price-range{text-align:left;flex-shrink:0}
+.price-range .min-price{font-size:1.4rem;font-weight:700;color:var(--best);font-variant-numeric:tabular-nums;line-height:1}
+.price-range .max-price{font-size:.78rem;color:var(--fg-muted);font-variant-numeric:tabular-nums}
+.price-range .label{font-size:.68rem;color:var(--fg-muted);margin-bottom:2px}
+.prices-list{border-top:1px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:7px}
+.price-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;direction:rtl}
+.chain-name{font-size:.85rem;color:var(--fg);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chain-name.best-store{color:var(--best);font-weight:700}
+.price-bar-wrap{height:5px;background:var(--border);border-radius:3px;overflow:hidden;min-width:40px}
+.price-bar{height:100%;border-radius:3px;transition:width .3s ease}
+.price-bar.best{background:var(--best)}.price-bar.mid{background:var(--accent)}.price-bar.high{background:var(--fg-muted)}
+.price-val{font-size:.88rem;font-weight:600;color:var(--fg);font-variant-numeric:tabular-nums;white-space:nowrap;min-width:52px;text-align:left}
+.price-val.best{color:var(--best)}
+.state-msg{text-align:center;padding:60px 20px;color:var(--fg-muted);font-size:1rem}
+.state-msg .icon{font-size:2.5rem;margin-bottom:12px}
+.state-msg h3{font-family:var(--font-serif);color:var(--fg);margin:0 0 6px;font-size:1.2rem}
+.skeleton{background:linear-gradient(90deg,var(--border) 25%,var(--bg) 50%,var(--border) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.load-more-btn{margin:20px auto 0;display:block;padding:12px 32px;border-radius:50px;border:1.5px solid var(--accent);background:transparent;color:var(--accent);font-family:var(--font-he);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .15s}
+.load-more-btn:hover{background:var(--accent);color:var(--accent-text)}
+.load-more-btn:disabled{opacity:.5;cursor:default}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">קמז<span>׳</span></div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="search" id="searchInput" class="search-input" placeholder="חפש מוצר, מותג..." autocomplete="off">
+  </div>
+</div>
+<div class="filters-bar" id="filtersBar">
+  <select class="city-select" id="citySelect"><option value="">כל הערים</option></select>
+  <button class="filter-chip active" data-dept="">הכל</button>
+  <button class="filter-chip" data-dept="מכולת">מכולת</button>
+  <button class="filter-chip" data-dept="משקאות, יין ואלכוהול">משקאות</button>
+  <button class="filter-chip" data-dept="חטיפים">חטיפים</button>
+  <button class="filter-chip" data-dept="מוצרי חלב וביצים">מוצרי חלב</button>
+  <button class="filter-chip" data-dept="בשר ועוף">בשר</button>
+  <button class="filter-chip" data-dept="לחם ומאפים">לחם</button>
+  <button class="filter-chip" data-dept="פירות וירקות">פירות וירקות</button>
+</div>
+<div class="stats-row" id="statsRow" hidden><span>נמצאו <strong id="statsCount">0</strong> מוצרים</span></div>
+<div class="results" id="results">
+  <div class="state-msg"><div class="icon">🛒</div><h3>השווה מחירים בישראל</h3><p>חפש מוצר כדי לראות מחירים בכל הרשתות</p></div>
+</div>
+<button class="load-more-btn" id="loadMoreBtn" hidden>טען עוד מוצרים</button>
+<script>
+const EDGE_URL='https://iwqaichmldpsutfujoco.supabase.co/functions/v1/kamaz-search';
+const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml3cWFpY2htbGRwc3V0ZnVqb2NvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTc5NjMsImV4cCI6MjA5NDIzMzk2M30.I6fCU5jrkCybSH11SGgGcCZAi-VFYsYMxEeR9HDVotM';
+const PAGE=20;
+async function ef(p={}){const u=new URL(EDGE_URL);Object.entries(p).forEach(([k,v])=>{if(v!==''&&v!=null)u.searchParams.set(k,v)});const r=await fetch(u,{headers:{apikey:KEY,Authorization:'Bearer '+KEY}});if(!r.ok)throw new Error(await r.text());return r.json()}
+let q='',dept='',city='',off=0,tot=0,busy=false,timer=null;
+async function loadCities(){try{const d=await ef({action:'cities'});const seen=new Set();const sel=document.getElementById('citySelect');d.forEach(s=>{const c=s.city_he?.trim();if(!c||seen.has(c))return;seen.add(c);const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o)})}catch(e){console.error(e)}}
+async function load(reset=false){if(busy)return;if(reset){off=0;tot=0}busy=true;if(reset)skel();
+try{const r=await ef({q,dept,city,offset:off,limit:PAGE});const prods=r.products||[];tot=r.count||0;
+if(!prods.length&&!off){empty();busy=false;return}
+const pm={};(r.prices||[]).forEach(p=>{if(!pm[p.barcode])pm[p.barcode]=[];pm[p.barcode].push(p)});
+const c=document.getElementById('results');if(reset)c.innerHTML='';
+document.getElementById('statsRow').hidden=false;
+document.getElementById('statsCount').textContent=tot.toLocaleString('he-IL');
+prods.forEach(p=>{const prices=pm[p.barcode]||[];if(city&&!prices.length)return;c.appendChild(card(p,prices))});
+off+=prods.length;const b=document.getElementById('loadMoreBtn');b.hidden=off>=tot;b.disabled=false;
+}catch(e){console.error(e);if(!off)err(e.message)}busy=false}
+function card(p,prices){
+prices.sort((a,b)=>+a.price-+b.price);
+const mn=prices.length?+prices[0].price:null,mx=prices.length?+prices[prices.length-1].price:null;
+const srcs=[p.image_1,p.image_2,p.image_3,p.image_4,p.image_5].filter(Boolean);
+let img;if(srcs.length){img=document.createElement('img');img.className='product-img';img.alt=p.name_he||'';img.loading='lazy';let i=0;const t=()=>{if(i<srcs.length)img.src=srcs[i++];else img.replaceWith(ph())};img.onerror=t;t()}else img=ph();
+const el=document.createElement('div');el.className='product-card';
+const hdr=document.createElement('div');hdr.className='card-header';
+const info=document.createElement('div');info.className='product-info';
+info.innerHTML=`<div class="product-name">${esc(p.name_he||'')}</div><div class="product-meta">${p.brand_he?`<span>${esc(p.brand_he)}</span><span style="opacity:.4">·</span>`:''} ${p.department_he?`<span class="dept-tag">${esc(p.department_he.split(',')[0].trim())}</span>`:''}</div>`;
+const pr=document.createElement('div');pr.className='price-range';
+if(mn!==null)pr.innerHTML=`<div class="label">החל מ</div><div class="min-price">${mn.toFixed(2)} ₪</div>${mx!==mn?`<div class="max-price">עד ${mx.toFixed(2)} ₪</div>`:''}`;
+else pr.innerHTML=`<div class="max-price" style="font-size:.8rem">אין מחיר</div>`;
+hdr.appendChild(img);hdr.appendChild(info);hdr.appendChild(pr);el.appendChild(hdr);
+if(prices.length){const lst=document.createElement('div');lst.className='prices-list';
+const by={};prices.forEach(x=>{const ch=x.chain_id||x.store_id;if(!by[ch]||+x.price<+by[ch].price)by[ch]=x});
+const cp=Object.values(by).sort((a,b)=>+a.price-+b.price).slice(0,8);
+const lo=Math.min(...cp.map(x=>+x.price)),hi=Math.max(...cp.map(x=>+x.price));
+cp.forEach((x,i)=>{const v=+x.price,pct=hi>lo?Math.round(30+((v-lo)/(hi-lo)*70)):60,best=i===0;
+const rw=document.createElement('div');rw.className='price-row';
+rw.innerHTML=`<span class="chain-name${best?' best-store':''}">${lbl(x.chain_id)}</span><div class="price-bar-wrap"><div class="price-bar ${best?'best':v<lo+(hi-lo)*.5?'mid':'high'}" style="width:${pct}%"></div></div><span class="price-val${best?' best':''}">${v.toFixed(2)} ₪</span>`;
+lst.appendChild(rw)});el.appendChild(lst)}
+return el}
+function ph(){const e=document.createElement('div');e.className='product-img-placeholder';e.textContent='🛍️';return e}
+function lbl(id){return({rami_levy:'רמי לוי',shufersal:'שופרסל',yohananof:'יוחננוף',hazi_hinam:'חצי חינם',osher_ad:'אושר עד',tiv_taam:'טיב טעם',yeinot_bitan:'יינות ביתן',zol_vebegadol:'זול ובגדול',dor_alon:'דור אלון',stop_market:'סטופ מרקט',super_yuda:'סופר יודה',super_pharm:'סופר-פארם',victory:'ויקטורי',fresh_market:'פרש מרקט',yellow:'ילו',mahsani_ashuk:'מחסני השוק'})[id]||id}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function skel(){const c=document.getElementById('results');c.innerHTML='';for(let i=0;i<4;i++)c.innerHTML+=`<div class="product-card" style="padding:16px;display:flex;gap:14px"><div class="skeleton" style="width:76px;height:76px;border-radius:8px;flex-shrink:0"></div><div style="flex:1;display:flex;flex-direction:column;gap:8px"><div class="skeleton" style="height:16px;width:70%"></div><div class="skeleton" style="height:12px;width:40%"></div></div></div>`;document.getElementById('loadMoreBtn').hidden=true;document.getElementById('statsRow').hidden=true}
+function empty(){document.getElementById('results').innerHTML='<div class="state-msg"><div class="icon">🔍</div><h3>לא נמצאו תוצאות</h3><p>נסה מילות חיפוש אחרות</p></div>';document.getElementById('loadMoreBtn').hidden=true;document.getElementById('statsRow').hidden=true}
+function err(m){document.getElementById('results').innerHTML=`<div class="state-msg"><div class="icon">⚠️</div><h3>שגיאה</h3><p style="font-size:.75rem;direction:ltr">${m||''}</p></div>`}
+document.getElementById('searchInput').addEventListener('input',e=>{q=e.target.value.trim();clearTimeout(timer);if(!q&&!dept&&!city){document.getElementById('results').innerHTML='<div class="state-msg"><div class="icon">🛒</div><h3>השווה מחירים בישראל</h3><p>חפש מוצר כדי לראות מחירים בכל הרשתות</p></div>';document.getElementById('statsRow').hidden=true;document.getElementById('loadMoreBtn').hidden=true;return}timer=setTimeout(()=>load(true),320)});
+document.getElementById('filtersBar').addEventListener('click',e=>{const c=e.target.closest('.filter-chip');if(!c)return;document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active'));c.classList.add('active');dept=c.dataset.dept;if(q||dept||city)load(true)});
+document.getElementById('citySelect').addEventListener('change',e=>{city=e.target.value;e.target.classList.toggle('active',!!city);if(q||dept||city)load(true)});
+document.getElementById('loadMoreBtn').addEventListener('click',()=>{document.getElementById('loadMoreBtn').disabled=true;load(false)});
+loadCities();
+</script>
+</body>
+</html>
