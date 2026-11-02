@@ -68,7 +68,7 @@ SCRAPERS = {
     "KESHET":        ("il_supermarket_scarper.scrappers.keshet", "Keshet", "keshet"),
     "KING_STORE":    ("il_supermarket_scarper.scrappers.king_store", "KingStore", "king_store"),
     "MAAYAN2000":    ("il_supermarket_scarper.scrappers.maayan2000", "Maayan2000", "maayan2000"),
-    "MESHNAT_YOSEF": ("il_supermarket_scarper.scrappers.meshnat_yosef", "MeshnatYosef", "meshnat_yosef"),
+    # MESHNAT_YOSEF: n'existe pas dans il-supermarket-scraper==1.0.15 (absent du package)
     "POLIZER":       ("il_supermarket_scarper.scrappers.polizer", "Polizer", "polizer"),
     "SHEFA_BARCART": ("il_supermarket_scarper.scrappers.shefa_barcart_ashem", "ShefaBarcartAshem", "shefa_barcart"),
     "SHUK_AHIR":     ("il_supermarket_scarper.scrappers.shuk_ahir", "ShukAhir", "shuk_ahir"),
@@ -77,7 +77,16 @@ SCRAPERS = {
     "YELLOW":        ("il_supermarket_scarper.scrappers.yellow", "Yellow", "yellow"),
 }
 
-def extract_store_id(filename):
+def get_store_id_from_xml(root):
+    """Lit le vrai StoreID depuis le XML (insensible à la casse du tag)."""
+    for tag in ("StoreID", "StoreId", "store_id", "storeid"):
+        val = root.findtext(tag)
+        if val and val.strip():
+            return val.strip()
+    return ""
+
+def extract_store_id_from_filename(filename):
+    """Fallback: extrait le store_id depuis le nom de fichier."""
     m = re.findall(r'-(\d{3,4})-', filename)
     if len(m) >= 2:
         return m[1]
@@ -93,9 +102,7 @@ def parse_price_xml(filepath, chain_id):
     try:
         tree = ET.parse(filepath)
         root = tree.getroot()
-        store_id_xml = (root.findtext("StoreId") or root.findtext("store_id") or "").strip()
-        store_id_file = extract_store_id(os.path.basename(filepath))
-        store_id = store_id_xml or store_id_file or "000"
+        store_id = get_store_id_from_xml(root) or extract_store_id_from_filename(os.path.basename(filepath)) or "000"
 
         for item in root.iter("Item"):
             code = (item.findtext("ItemCode") or item.findtext("barcode") or "").strip()
@@ -115,9 +122,7 @@ def parse_promo_xml(filepath, chain_id):
     try:
         tree = ET.parse(filepath)
         root = tree.getroot()
-        store_id_xml = (root.findtext("StoreId") or "").strip()
-        store_id_file = extract_store_id(os.path.basename(filepath))
-        store_id = store_id_xml or store_id_file or "000"
+        store_id = get_store_id_from_xml(root) or extract_store_id_from_filename(os.path.basename(filepath)) or "000"
 
         for promo in root.iter("Promotion"):
             desc_he = (promo.findtext("PromotionDescription") or "").strip()
@@ -210,8 +215,23 @@ async def scrape_chain(key, module_path, class_name):
     return dump_dir
 
 def upsert_stores(dump_dir, chain_id, key):
+    """Extrait les store_ids depuis le XML (vrai ID gouvernemental) et les upsert dans stores."""
     xml_files = [f for f in os.listdir(dump_dir) if f.endswith(".xml")]
-    store_ids = {extract_store_id(f) for f in xml_files if extract_store_id(f) != "000"}
+    store_ids = set()
+    for f in xml_files:
+        fpath = os.path.join(dump_dir, f)
+        try:
+            tree = ET.parse(fpath)
+            root = tree.getroot()
+            sid = get_store_id_from_xml(root)
+            if not sid:
+                sid = extract_store_id_from_filename(f)
+            if sid and sid != "000":
+                store_ids.add(sid)
+        except:
+            sid = extract_store_id_from_filename(f)
+            if sid and sid != "000":
+                store_ids.add(sid)
     batch = [{"id": f"{chain_id}-{sid}", "chain_id": chain_id, "scraper_key": sid} for sid in store_ids]
     for i in range(0, len(batch), 100):
         try:
