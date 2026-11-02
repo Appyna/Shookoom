@@ -1,4 +1,4 @@
-import os, asyncio, logging, xml.etree.ElementTree as ET, importlib, re, gzip, shutil
+import os, asyncio, logging, xml.etree.ElementTree as ET, importlib, re, gzip, shutil, time
 from datetime import date, datetime
 from dotenv import load_dotenv
 from supabase import create_client
@@ -14,12 +14,26 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
     handlers=[logging.StreamHandler()])
 log = logging.getLogger()
 
+def fetch_with_retry(fn, max_retries=5, base_delay=30):
+    """Exécute fn() avec retry exponentiel en cas d'erreur réseau/Supabase."""
+    for attempt in range(max_retries):
+        try:
+            return fn()
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise
+            delay = base_delay * (2 ** attempt)  # 30s, 60s, 120s, 240s
+            log.warning(f"Erreur Supabase (tentative {attempt+1}/{max_retries}): {e} — retry dans {delay}s...")
+            time.sleep(delay)
+
 # Chargement des barcodes connus dans products_new (une seule fois au démarrage)
 log.info("Chargement des barcodes products_new...")
 _known_barcodes = set()
 offset = 0
 while True:
-    res = supabase.table("products_new").select("barcode").range(offset, offset + 999).execute()
+    res = fetch_with_retry(
+        lambda off=offset: supabase.table("products_new").select("barcode").range(off, off + 999).execute()
+    )
     if not res.data:
         break
     for row in res.data:
@@ -201,7 +215,7 @@ def upsert_stores(dump_dir, chain_id, key):
     batch = [{"id": f"{chain_id}-{sid}", "chain_id": chain_id, "scraper_key": sid} for sid in store_ids]
     for i in range(0, len(batch), 100):
         try:
-            supabase.table("stores").upsert(batch[i:i+100], on_conflict="id").execute()
+            fetch_with_retry(lambda b=batch[i:i+100]: supabase.table("stores").upsert(b, on_conflict="id").execute())
         except Exception as e:
             log.error(f"Erreur upsert stores {key}: {e}")
 
@@ -224,7 +238,7 @@ def upsert_prices(items, chain_id, key):
     errors = 0
     for i in range(0, len(batch), 200):
         try:
-            supabase.table("prices_new").upsert(batch[i:i+200], on_conflict="barcode,store_id").execute()
+            fetch_with_retry(lambda b=batch[i:i+200]: supabase.table("prices_new").upsert(b, on_conflict="barcode,store_id").execute())
         except Exception as e:
             errors += 1
             if errors <= 2:
@@ -255,7 +269,7 @@ def upsert_promos(items, chain_id, key):
     errors = 0
     for i in range(0, len(batch), 200):
         try:
-            supabase.table("promos_new").insert(batch[i:i+200]).execute()
+            fetch_with_retry(lambda b=batch[i:i+200]: supabase.table("promos_new").insert(b).execute())
         except Exception as e:
             errors += 1
             if errors <= 2:
@@ -265,7 +279,7 @@ def upsert_promos(items, chain_id, key):
 def cleanup_expired_promos():
     try:
         today = date.today().isoformat()
-        result = supabase.table("promos_new").delete().lt("date_end", today).execute()
+        result = fetch_with_retry(lambda: supabase.table("promos_new").delete().lt("date_end", today).execute())
         log.info(f"Promos expirées supprimées: {len(result.data) if result.data else 0}")
     except Exception as e:
         log.error(f"Erreur cleanup promos: {e}")
