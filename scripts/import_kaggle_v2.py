@@ -232,10 +232,10 @@ def upsert_stores(dump_dir, chain_id, key):
             sid = extract_store_id_from_filename(f)
             if sid and sid != "000":
                 store_ids.add(sid)
-    batch = [{"id": f"{chain_id}-{sid}", "chain_id": chain_id, "scraper_key": sid} for sid in store_ids]
+    batch = [{"chain_id": chain_id, "store_id": sid} for sid in store_ids]
     for i in range(0, len(batch), 100):
         try:
-            fetch_with_retry(lambda b=batch[i:i+100]: supabase.table("stores").upsert(b, on_conflict="id").execute())
+            fetch_with_retry(lambda b=batch[i:i+100]: supabase.table("stores").upsert(b, on_conflict="chain_id,store_id").execute())
         except Exception as e:
             log.error(f"Erreur upsert stores {key}: {e}")
 
@@ -253,7 +253,7 @@ def upsert_prices(items, chain_id, key):
     if not filtered:
         return 0
     batch = [{"barcode": item["code"], "chain_id": chain_id,
-              "store_id": f"{chain_id}-{item['store_id']}",
+              "store_id": item["store_id"],
               "price": item["price"], "updated_at": "now()"} for item in filtered]
     errors = 0
     for i in range(0, len(batch), 200):
@@ -279,7 +279,7 @@ def upsert_promos(items, chain_id, key):
     if not filtered:
         return 0
     batch = [{"barcode": item["code"], "chain_id": chain_id,
-              "store_id": f"{chain_id}-{item['store_id']}",
+              "store_id": item["store_id"],
               "price_promo": item["price_promo"], "price_normal": item["price_normal"],
               "discount_rate": item["discount_rate"], "promo_description_he": item["desc"],
               "date_start": item["date_start"], "date_end": item["date_end"],
